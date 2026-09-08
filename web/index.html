@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>RoadReady Dashboard</title>
+ <link rel="stylesheet" href="../includes/styles.css">
+</head>
+
+<body>
+
+ <div id="sidebar-root"></div>
+
+ <main class="main">
+  <div id="topbar-root"></div>
+  <div id="vehicle-root"></div>
+  <div id="stats-root"></div>
+
+  <section class="content-grid">
+   <div id="maintenance-panel-root"></div>
+   <div id="history-panel-root"></div>
+  </section>
+ </main>
+
+ <script src="../includes/lib.js"></script>
+ <script>
+  // ---------- Page data ----------
+  // Swap these objects/arrays out (or fetch them from an API) to update the
+  // dashboard without touching the markup.
+
+  const vehicle = {
+   title: '2003 Acura TL',
+   details: '3.2L V6 &nbsp; • &nbsp; Automatic &nbsp; • &nbsp; Sedan',
+   mileageLabel: 'Current Mileage: 142,850 mi',
+   imageSrc: 'images/acura-tl.png',
+   imageSrc: '../images/acura-tl.png',
+  };
+
+  const stats = [
+   { label: 'NEXT SERVICE', number: '650 mi', sub: 'Oil change' },
+   { label: 'MAINTENANCE THIS YEAR', number: '$385', sub: '5 services completed' },
+   { label: 'VEHICLE STATUS', number: 'Good', sub: 'No overdue maintenance' }
+  ];
+
+  const upcomingMaintenance = [
+   { name: 'Oil Change', detail: 'Due at 143,500 miles', status: 'soon' },
+   { name: 'Tire Rotation', detail: 'Due at 145,000 miles', status: 'good' },
+   { name: 'Brake Inspection', detail: 'Due at 146,000 miles', status: 'good' }
+  ];
+
+  const history = [
+   { service: 'Oil Change', mileage: '140,000', cost: '$48' },
+   { service: 'Brake Service', mileage: '137,500', cost: '$210' },
+   { service: 'Tire Rotation', mileage: '135,000', cost: '$30' },
+   { service: 'Coolant Flush', mileage: '132,000', cost: '$97' }
+  ];
+
+  // ---------- Render ----------
+
+  document.getElementById('sidebar-root').outerHTML =
+   renderSidebar(DEFAULT_NAV_ITEMS, 'Dashboard');
+
+  document.getElementById('topbar-root').innerHTML =
+   renderTopbar({
+    title: 'Dashboard',
+    subtitle: "Here's the current status of your vehicle.",
+    userName: 'Sam'
+   });
+
+  document.getElementById('vehicle-root').outerHTML =
+   renderVehicleCard(vehicle);
+
+  document.getElementById('stats-root').outerHTML =
+   renderStats(stats);
+
+  document.getElementById('maintenance-panel-root').outerHTML =
+   renderPanel({
+    title: 'Upcoming Maintenance',
+    bodyHtml: renderMaintenanceList(upcomingMaintenance),
+    footerHtml: `
+    <div style="margin-top: 20px;">
+     <button class="button">+ Add Maintenance</button>
+    </div>`
+   });
+
+  document.getElementById('history-panel-root').outerHTML =
+   renderPanel({
+    title: 'Recent History',
+    bodyHtml: renderHistoryTable(history)
+   });
+ </script>
+
+</body>
+</html>
