@@ -4,60 +4,70 @@ RoadReady is a vehicle maintenance dashboard that helps users track their vehicl
 
 ## Tech Stack
 
-* PHP
+### Current
+
+* HTML
+* CSS
+* JavaScript
 * MySQL
-* HTML / CSS / JavaScript
-* XAMPP
-* MySQLi
+* Live Server
+
+### Future
+
+* Node.js backend
+* Cloud database
 
 ## Project Structure
 
 ```text
 RoadReady/
-├── includes/
-│   ├── config.php
-│   ├── navbar.php
-│   ├── footer.php
-│   ├── lib.js
-│   └── styles.css
+├── index.html
 │
-├── processes/
-│   ├── login.php
-│   ├── logout.php
-│   └── db_test.php
+├── includes/
+│   ├── styles.css
+│   ├── app.js
+│   ├── navbar.js
+│   └── footer.js
+│
+├── js/
+│   ├── data.js
+│   ├── dashboard.js
+│   ├── vehicle.js
+│   ├── maintenance.js
+│   └── maintenance-guide.js
 │
 └── web/
-    ├── dashboard.php
-    ├── vehicle.php
-    ├── maintenance.php
-    └── maintenance_guide.php
+    ├── dashboard.html
+    ├── vehicle.html
+    ├── maintenance.html
+    └── maintenance-guide.html
 ```
 
-## Main Features
+## Current Features
 
-* User login and sessions
-* Vehicle dashboard
+* Dashboard
 * Vehicle information
-* Vehicle sharing
+* Multiple vehicles
+* Vehicle selection
 * Maintenance schedules
 * Maintenance history
-* Maintenance status tracking
+* Maintenance status
 * Maintenance guide
-* Database-driven data
-* Email reminder system groundwork
+* Shared navigation and footer
+* Temporary frontend data
 
 ## How It Works
 
-1. User logs in.
-2. RoadReady checks their account.
-3. The database determines which vehicles they can access.
-4. The dashboard displays their vehicle information and maintenance.
-5. Users can view upcoming maintenance and service history.
-6. Completed maintenance can be recorded in the database.
+1. The user opens RoadReady.
+2. The dashboard loads temporary JavaScript data.
+3. The user can select a vehicle.
+4. RoadReady displays vehicle information and maintenance.
+5. Users can view upcoming and completed maintenance.
+6. Maintenance guide articles can be viewed by topic.
 
 ## Database
 
-The main tables include:
+The MySQL database contains:
 
 * `users`
 * `vehicles`
@@ -68,44 +78,73 @@ The main tables include:
 * `maintenance_guide_articles`
 * `reminders`
 
-The database is the main source of truth for the application.
+The MySQL database will remain the main source of truth when the backend is added.
+
+## Current Development
+
+The frontend currently uses:
+
+```text
+js/data.js
+```
+
+as temporary data instead of connecting directly to MySQL.
+
+`localStorage` is also used temporarily for selected vehicles and guide articles.
+
+The current frontend does not have working authentication or database writes.
 
 ## Running Locally
 
-RoadReady is currently designed to run with XAMPP.
+The current frontend can be run using VS Code with the Live Server extension.
 
-Project location:
-
-```text
-C:\xampp\htdocs\RoadReady\
-```
-
-Start **Apache** and **MySQL** in XAMPP, then open:
+Open:
 
 ```text
-http://localhost/RoadReady/processes/login.php
+index.html
 ```
 
-## Development Notes
+with Live Server.
 
-This is currently a development version of RoadReady.
+## Future Backend
 
-The application uses SHA-256 password hashes for the current test database. Before production, authentication should be changed to PHP's `password_hash()` and `password_verify()`.
+The backend will eventually be built using:
 
-`db_test.php` is for development only and should not be exposed in production.
+```text
+Node.js
+    ↓
+REST API
+    ↓
+MySQL
+```
+
+Planned API areas include:
+
+```text
+/api/auth
+/api/vehicles
+/api/maintenance
+/api/guides
+/api/reminders
+```
 
 ## Future Features
 
+* User authentication
+* Vehicle sharing
+* Database-connected dashboard
+* Add and complete maintenance
+* Automated email reminders
 * Vehicle photos
 * VIN lookup
 * Recalls and known issues
 * Vehicle valuation
-* CSV/Excel maintenance imports
-* Better vehicle sharing
-* Automated email reminders
-* License/registration syncing
+* CSV/Excel imports
+* License and registration syncing
 * Expanded maintenance information
 
-## Current Goal
+## Development Goal
 
-Continue building RoadReady into a complete vehicle maintenance management system with a secure PHP/MySQL backend and user-friendly dashboard.
+Continue improving the RoadReady frontend first.
+
+Once the frontend is stable, connect it to the existing MySQL database through a Node.js backend.
