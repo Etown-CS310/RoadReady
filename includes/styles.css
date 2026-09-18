@@ -661,3 +661,87 @@ td {
     flex-direction: column;
   }
 }
+/* -----------------------------------------
+   Vehicle Photo Carousel
+----------------------------------------- */
+
+.vehicle-carousel {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.vehicle-carousel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Carousel buttons */
+
+.vehicle-carousel button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: white;
+    color: black;
+
+    font-size: 30px;
+    cursor: pointer;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#previousButton {
+    left: 15px;
+}
+
+#nextButton {
+    right: 15px;
+}
+
+/* Photo number */
+
+#photoNumber {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+
+    padding: 6px 12px;
+    border-radius: 20px;
+
+    font-size: 14px;
+}
+
+/* Upload button */
+
+.upload-button {
+    display: inline-block;
+    margin-top: 12px;
+
+    padding: 10px 16px;
+
+    background: #f2f2f2;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.upload-button input {
+    display: none;
+}

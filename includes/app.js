@@ -75,18 +75,104 @@ function renderVehicleCard(vehicle) {
             </div>
 
             <div class="car-image">
-                ${
-                    vehicle.image
-                        ? `<img src="${vehicle.image}" alt="${vehicle.make} ${vehicle.model}">`
-                        : "🚘 No vehicle image"
-                }
+
+                <div class="vehicle-carousel">
+
+                    <img 
+                        id="vehiclePhoto"
+                        src="${vehicle.image}"
+                        alt="${vehicle.make} ${vehicle.model}"
+                    >
+
+                    <button id="previousButton" onclick="previousPhoto()">
+                        ‹
+                    </button>
+
+                    <span id="photoNumber">
+                        1 / 3
+                    </span>
+
+                    <button id="nextButton" onclick="nextPhoto()">
+                        ›
+                    </button>
+
+                </div>
+
+                <label class="upload-button">
+                    Add Vehicle Photos
+                    <input 
+                        type="file"
+                        id="vehicleUpload"
+                        accept="image/*"
+                        multiple
+                    >
+                </label>
+
             </div>
 
         </section>
     `;
 }
 
+/* -----------------------------------------
+   Vehicle Photo Carousel
+----------------------------------------- */
+let vehiclePhotos = [];
+let currentPhoto = 0;
 
+function nextPhoto() {
+
+    currentPhoto++;
+
+    if (currentPhoto >= vehiclePhotos.length) {
+        currentPhoto = 0;
+    }
+
+    showPhoto();
+}
+
+function previousPhoto() {
+
+    currentPhoto--;
+
+    if (currentPhoto < 0) {
+        currentPhoto = vehiclePhotos.length - 1;
+    }
+
+    showPhoto();
+}
+
+function showPhoto() {
+
+    document.getElementById("vehiclePhoto").src =
+        vehiclePhotos[currentPhoto];
+
+    document.getElementById("photoNumber").textContent =
+        (currentPhoto + 1) + " / " + vehiclePhotos.length;
+}
+
+
+document.addEventListener("change", function(event) {
+
+    if (event.target.id === "vehicleUpload") {
+
+        vehiclePhotos = [];
+
+        for (let i = 0; i < event.target.files.length; i++) {
+
+            let photo = URL.createObjectURL(
+                event.target.files[i]
+            );
+
+            vehiclePhotos.push(photo);
+        }
+
+        currentPhoto = 0;
+
+        showPhoto();
+    }
+
+});
 /* -----------------------------------------
    Statistics
 ----------------------------------------- */
