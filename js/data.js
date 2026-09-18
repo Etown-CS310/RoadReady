@@ -10,7 +10,7 @@
  * - guides will come from the backend
  */
 
-const roadReadyData = {
+let roadReadyData = {
 
     user: {
         name: "Sam Vossen"

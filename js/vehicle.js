@@ -22,6 +22,11 @@ document.addEventListener("DOMContentLoaded", function () {
             "Vehicles you own or have been given access to.",
             roadReadyData.user.name
         )}
+        
+        <div id="import_csv">
+            <button id = "import">Import Vehicle CSV Data </button>
+            <input type="file" id="csv-input" style="display: none;" />
+        </div>
 
         <div class="vehicle-list">
 
@@ -108,6 +113,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
     `;
 
+    //Making event listener and function for my import button
+    window.addEventListener("load", importinit);
+    function importinit(){
+        let import_button = document.getElementById("import");
+        import_button.addEventListener("click", importCSV);
+    }
+    function importCSV(){
+        let fileInput = document.getElementById('csv-input');
+        fileInput.value = "";
+        fileInput.click();
+        fileInput.addEventListener('change', readFile(), { once: true });
+    }
+    function readFile() {
+        const fileInput = document.getElementById('csv-input');
+        const file = fileInput.files[0]; 
+        
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.onload = processingCSV();
+            
+            function processingCSV() {
+                const textContent = reader.result; 
+                const data = parseCSVData(textContent);
+                
+                for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                
+                // Ensure the row isn't empty and has data fields
+                if (row.length >= 5) {
+                    // Need to change RoadReadyData to add in new vehicle from CSV
+                }
+            }
+            }
+            
+            reader.readAsText(file);
+        }
+    }
+    // Need to make ParseCSVData Function
     document.querySelectorAll("[data-vehicle-id]")
         .forEach(card => {
 
