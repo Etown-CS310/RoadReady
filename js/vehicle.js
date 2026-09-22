@@ -111,7 +111,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         </section>
 
+        ${renderValueCard()}
+
     `;
+
+    loadValueCard(vehicle);
 
     //Making event listener and function for my import button
     window.addEventListener("load", importinit);
@@ -151,6 +155,12 @@ document.addEventListener("DOMContentLoaded", function () {
             reader.readAsText(file);
         }
     }
+
+    function loadVehicleValue(vehicle) {
+    // Eventually call vehicle valuation API
+    // For now, use temporary data
+    }
+
     // Need to make ParseCSVData Function
     document.querySelectorAll("[data-vehicle-id]")
         .forEach(card => {

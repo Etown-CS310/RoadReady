@@ -329,3 +329,75 @@ function renderPanel(title, bodyHTML, viewAllHref = null) {
         </div>
     `;
 }
+
+/*
+ * Vehicle value
+ * Temporary: reads from data.js.
+ * Later: replace the body of getVehicleValue with an API call.
+ */
+async function getVehicleValue(vehicle) {
+
+    // FUTURE:
+    // const res = await fetch(`/api/vehicles/${vehicle.id}/value`);
+    // if (!res.ok) throw new Error("Valuation unavailable");
+    // return await res.json();
+
+    if (vehicle.estimatedValue == null) return null;
+
+    return {
+        value: vehicle.estimatedValue,
+        low: Math.round(vehicle.estimatedValue * 0.92),
+        high: Math.round(vehicle.estimatedValue * 1.08),
+        updated: "Sample data",
+        source: "Placeholder"
+    };
+}
+
+function formatMoney(n) {
+    return "$" + Number(n).toLocaleString();
+}
+
+// Renders the card shell (loading state)
+function renderValueCard() {
+    return `
+        <section class="value-card" id="value-card">
+            <span class="value-label">Estimated Value</span>
+            <strong class="value-amount">Loading...</strong>
+            <small class="value-range"></small>
+        </section>
+    `;
+}
+
+// Fills the card in once data arrives. Call AFTER innerHTML is set.
+async function loadValueCard(vehicle) {
+    const card = document.getElementById("value-card");
+    if (!card) return;
+
+    try {
+        const data = await getVehicleValue(vehicle);
+
+        if (!data) {
+            card.innerHTML = `
+                <span class="value-label">Estimated Value</span>
+                <strong class="value-amount">Unavailable</strong>
+                <small class="value-range">No valuation data yet.</small>
+            `;
+            return;
+        }
+
+        card.innerHTML = `
+            <span class="value-label">Estimated Value</span>
+            <strong class="value-amount">${formatMoney(data.value)}</strong>
+            <small class="value-range">
+                ${formatMoney(data.low)} – ${formatMoney(data.high)}
+                • ${data.source}
+            </small>
+        `;
+    } catch (err) {
+        card.innerHTML = `
+            <span class="value-label">Estimated Value</span>
+            <strong class="value-amount">Unavailable</strong>
+            <small class="value-range">Couldn't load valuation.</small>
+        `;
+    }
+}

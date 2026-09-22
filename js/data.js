@@ -29,7 +29,8 @@ let roadReadyData = {
             bodyType: "Sedan",
             mileage: 142350,
             vin: "19UUA56803A000000",
-            image: ""
+            image: "",
+            estimatedValue: 3800
         },
 
         {
@@ -44,7 +45,8 @@ let roadReadyData = {
             bodyType: "SUV",
             mileage: 68320,
             vin: "2T3P1RFV0LW000000",
-            image: ""
+            image: "",
+            estimatedValue: 26500
         }
     ],
 

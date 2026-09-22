@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         ${renderVehicleCard(vehicle)}
 
+        ${renderValueCard()}
 
         ${renderStats(stats)}
 
@@ -110,5 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
         </section>
 
     `;
+
+    loadValueCard(vehicle);
 
 });

@@ -745,3 +745,30 @@ td {
 .upload-button input {
     display: none;
 }
+
+.value-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.value-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.value-amount {
+    font-size: 2rem;
+    color: #111827;
+}
+
+.value-range {
+    color: #6b7280;
+}
