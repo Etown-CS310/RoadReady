@@ -115,47 +115,60 @@ document.addEventListener("DOMContentLoaded", function () {
 
     `;
 
-    loadValueCard(vehicle);
+//Making event listener and function for my import button
+window.addEventListener("load", importinit);
+function importinit(){
+    let import_button = document.getElementById("import");
+    import_button.addEventListener("click", importCSV);
+}
+function importCSV() {
+    let fileInput = document.getElementById('csv-input');
+    fileInput.value = "";
+    fileInput.click();
+    fileInput.addEventListener('change', readFile, { once: true });
+}
 
-    //Making event listener and function for my import button
-    window.addEventListener("load", importinit);
-    function importinit(){
-        let import_button = document.getElementById("import");
-        import_button.addEventListener("click", importCSV);
-    }
-    function importCSV(){
-        let fileInput = document.getElementById('csv-input');
-        fileInput.value = "";
-        fileInput.click();
-        fileInput.addEventListener('change', readFile(), { once: true });
-    }
-    function readFile() {
-        const fileInput = document.getElementById('csv-input');
-        const file = fileInput.files[0]; 
+function readFile() {
+    const fileInput = document.getElementById('csv-input');
+    const file = fileInput.files[0]; 
+    
+    if (file) {
+        const reader = new FileReader();
         
-        if (file) {
-            const reader = new FileReader();
+        reader.onload = processingCSV; 
+        
+        function processingCSV() {
+            const textContent = reader.result; 
+            const rows = textContent.split(/\r?\n/);
             
-            reader.onload = processingCSV();
-            
-            function processingCSV() {
-                const textContent = reader.result; 
-                const data = parseCSVData(textContent);
-                
-                for (let i = 1; i < data.length; i++) {
-                const row = data[i];
-                
-                // Ensure the row isn't empty and has data fields
+            for (let i = 1; i < rows.length; i++) {
+                if (!rows[i].trim()) continue;
+
+                const row = rows[i].split(',');
+
                 if (row.length >= 5) {
-                    // Need to change RoadReadyData to add in new vehicle from CSV
+                    // Example mapping — adjust to your schema
+                    const vehicleInfo = {
+                        make: row[0].trim(),
+                        model: row[1].trim(),
+                        year: row[2].trim(),
+                        relationship: parseInt(row[3].trim()),
+                        vin: parseInt(row[4].trim())
+                    };
+
+                    // Add to your RoadReadyData structure
+                    roadReadyData.vehicles.push(vehicleInfo);
+                    console.log(roadReadyData);
                 }
             }
-            }
-            
-            reader.readAsText(file);
         }
+        
+        reader.readAsText(file);
     }
 
+
+    location.reload();
+}
     function loadVehicleValue(vehicle) {
     // Eventually call vehicle valuation API
     // For now, use temporary data
