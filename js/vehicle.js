@@ -166,14 +166,13 @@ function readFile() {
         reader.readAsText(file);
     }
 
-
+    
     location.reload();
 }
-    function loadVehicleValue(vehicle) {
+function loadVehicleValue(vehicle) {
     // Eventually call vehicle valuation API
     // For now, use temporary data
-    }
-
+}
     // Need to make ParseCSVData Function
     document.querySelectorAll("[data-vehicle-id]")
         .forEach(card => {
