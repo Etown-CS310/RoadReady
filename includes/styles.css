@@ -134,8 +134,8 @@ body {
 }
 
 .car-image {
-  width: 260px;
-  height: 130px;
+  width: 500px;
+  height: 500px;
   background: #eef1f4;
   border-radius: 10px;
   display: flex;
@@ -667,8 +667,8 @@ td {
 
 .vehicle-carousel {
     position: relative;
-    width: 100%;
-    height: 350px;
+    width: 500px;
+    height: 500px;
     overflow: hidden;
     border-radius: 12px;
 }
@@ -676,7 +676,7 @@ td {
 .vehicle-carousel img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 
@@ -684,22 +684,20 @@ td {
 
 .vehicle-carousel button {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 45%;
 
-    width: 45px;
-    height: 45px;
+    width: 10px;
+    height: 10px;
 
     border: none;
     border-radius: 50%;
 
-    background: white;
-    color: black;
+    background: none;
+    color: rgb(4, 20, 54);
 
     font-size: 30px;
     cursor: pointer;
 
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 #previousButton {
@@ -723,7 +721,7 @@ td {
     color: white;
 
     padding: 6px 12px;
-    border-radius: 20px;
+    border-radius: 0px;
 
     font-size: 14px;
 }
@@ -731,13 +729,14 @@ td {
 /* Upload button */
 
 .upload-button {
-    display: inline-block;
-    margin-top: 12px;
+    display: outside;
+    margin-top: 0px;
 
     padding: 10px 16px;
 
-    background: #f2f2f2;
-    border-radius: 8px;
+    background: #3d51e5;
+    color: rgb(229, 228, 228);
+    border-radius: 0px;
 
     cursor: pointer;
 }
