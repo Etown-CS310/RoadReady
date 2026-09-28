@@ -1,0 +1,26 @@
+{
+  "name": "roadready",
+  "version": "1.0.0",
+  "description": "RoadReady is a vehicle maintenance dashboard that helps users track their vehicles, upcoming maintenance, and service history.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Etown-CS310/RoadReady.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Etown-CS310/RoadReady/issues"
+  },
+  "homepage": "https://github.com/Etown-CS310/RoadReady#readme",
+  "dependencies": {
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "mysql2": "^3.24.4"
+  }
+}

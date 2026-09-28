@@ -1,1 +1,3 @@
 includes/.env
+node_modules/
+.env
