@@ -1,29 +1,88 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Maintenance Guide | RoadReady</title>
 
-    <link rel="stylesheet" href="../includes/styles.css">
+<title>Maintenance Guide | RoadReady</title>
+
+<link rel="stylesheet" href="../includes/styles.css">
+<link rel="icon" href="data:,">
+
+
 </head>
 
 <body>
 
-    <main class="main">
 
-        <div id="guide-content"></div>
+<main class="main">
 
-    </main>
+    <!-- Topbar -->
 
-    <script src="../includes/navbar.js"></script>
-    <script src="../includes/footer.js"></script>
-    <script src="../includes/app.js"></script>
+    <header class="topbar">
 
-    <script src="../js/data.js"></script>
-    <script src="../js/maintenance-guide.js"></script>
+        <div>
+            <h1>Maintenance Guide</h1>
+            <p>Learn why routine maintenance matters.</p>
+        </div>
+
+        <div id="guide-user" class="profile"></div>
+
+    </header>
+
+
+    <!-- Guide -->
+
+    <section class="guide-layout">
+
+        <!-- Topics -->
+
+        <aside class="panel guide-sidebar">
+
+            <h2>Topics</h2>
+
+            <div id="guide-topics"></div>
+
+        </aside>
+
+
+        <!-- Article -->
+
+        <article class="panel guide-article">
+
+            <span id="guide-category" class="guide-category"></span>
+
+            <h2 id="guide-title"></h2>
+
+            <p id="guide-summary" class="guide-summary"></p>
+
+            <div id="guide-body" class="guide-body"></div>
+
+
+            <div class="risk-box">
+
+                <h3>Risks if skipped</h3>
+
+                <p id="guide-risks"></p>
+
+            </div>
+
+        </article>
+
+    </section>
+
+</main>
+
+
+<script src="../includes/navbar.js"></script>
+<script src="../includes/footer.js"></script>
+<script src="../includes/app.js"></script>
+
+<script src="../js/data.js"></script>
+<script src="../js/maintenance-guide.js"></script>
 
 </body>
 
