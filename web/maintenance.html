@@ -14,7 +14,89 @@
 
     <main class="main">
 
-        <div id="maintenance-content"></div>
+        <header class="topbar">
+            <div>
+                <h1>Maintenance</h1>
+                <p>Track upcoming service and completed maintenance.</p>
+            </div>
+
+            <div id="maintenance-user"></div>
+        </header>
+
+        <div class="vehicle-selector">
+
+            <label for="maintenanceVehicle">
+                Vehicle
+            </label>
+
+            <select id="maintenanceVehicle"></select>
+
+        </div>
+
+        <section class="content-grid maintenance-layout">
+
+            <section class="panel">
+                <h2>Upcoming Maintenance</h2>
+
+                <div id="maintenance-list">
+                    <div class="empty-state-small">
+                        No scheduled maintenance.
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Add Maintenance</h2>
+
+                <form id="maintenanceForm" class="form-grid">
+
+                    <label for="maintenanceType">
+                        Maintenance Type
+                    </label>
+
+                    <select id="maintenanceType" required>
+                        <option value="">Select service</option>
+                        <option>Oil Change</option>
+                        <option>Brake Inspection</option>
+                        <option>Tire Rotation</option>
+                        <option>Air Filter</option>
+                        <option>Transmission Service</option>
+                    </select>
+
+                    <label for="dueMileage">Due Mileage</label>
+
+                    <input
+                        type="number"
+                        id="dueMileage"
+                        min="0"
+                        placeholder="e.g. 145000"
+                    >
+
+                    <label for="dueDate">Due Date</label>
+
+                    <input type="date" id="dueDate">
+
+                    <label for="notes">Notes</label>
+
+                    <textarea
+                        id="notes"
+                        maxlength="255"
+                        rows="3"
+                    ></textarea>
+
+                    <button type="submit" class="button">
+                        Add Schedule Item
+                    </button>
+
+                </form>
+            </section>
+
+        </section>
+
+        <section class="panel">
+            <h2>Maintenance History</h2>
+            <div id="maintenance-history"></div>
+        </section>
 
     </main>
 

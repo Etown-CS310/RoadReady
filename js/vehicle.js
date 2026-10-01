@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
         vehicle = vehicles[0];
     }
 
-
     // Render topbar
     document.getElementById("vehicle-topbar").innerHTML =
         renderTopbar(
@@ -23,19 +22,16 @@ document.addEventListener("DOMContentLoaded", function () {
             roadReadyData.user.name
         );
 
-
     // Render vehicle list
     const vehicleList =
         document.getElementById("vehicle-list");
 
     vehicleList.innerHTML = vehicles.map(v => `
-
         <a
             href="vehicle.html"
             class="vehicle-list-card ${v.id === vehicle.id ? "selected" : ""}"
             data-vehicle-id="${v.id}"
         >
-
             <strong>
                 ${v.year} ${v.make} ${v.model}
             </strong>
@@ -49,35 +45,17 @@ document.addEventListener("DOMContentLoaded", function () {
             </small>
 
         </a>
-
     `).join("");
 
-
     // Render selected vehicle information
-    document.getElementById("vehicle-title").textContent =
-        `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
-
-    document.getElementById("vehicle-nickname").textContent =
-        vehicle.nickname || "";
-
-    document.getElementById("vehicle-mileage").textContent =
-        `${vehicle.mileage.toLocaleString()} mi`;
-
-    document.getElementById("vehicle-vin").textContent =
-        vehicle.vin;
-
-    document.getElementById("vehicle-trim").textContent =
-        vehicle.trim;
-
-    document.getElementById("vehicle-engine").textContent =
-        vehicle.engine;
-
-    document.getElementById("vehicle-transmission").textContent =
-        vehicle.transmission;
-
-    document.getElementById("vehicle-body-type").textContent =
-        vehicle.bodyType;
-
+    document.getElementById("vehicle-title").textContent = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+    document.getElementById("vehicle-nickname").textContent = vehicle.nickname || "";
+    document.getElementById("vehicle-mileage").textContent = `${vehicle.mileage.toLocaleString()} mi`;
+    document.getElementById("vehicle-vin").textContent = vehicle.vin;
+    document.getElementById("vehicle-trim").textContent = vehicle.trim;
+    document.getElementById("vehicle-engine").textContent = vehicle.engine;
+    document.getElementById("vehicle-transmission").textContent = vehicle.transmission;
+    document.getElementById("vehicle-body-type").textContent = vehicle.bodyType;
 
     // Render vehicle value
     const valueContainer =
@@ -88,7 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
             renderValueCard();
     }
 
-
     // Import button
     const importButton =
         document.getElementById("import");
@@ -97,7 +74,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "click",
         importCSV
     );
-
 
     // Vehicle selection
     document.querySelectorAll("[data-vehicle-id]")
@@ -117,10 +93,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
 
-
     // Import CSV
     function importCSV() {
-
         const fileInput =
             document.getElementById("csv-input");
 
@@ -135,39 +109,26 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     }
 
-
     // Read CSV
     function readFile() {
-
         const fileInput =
             document.getElementById("csv-input");
-
         const file = fileInput.files[0];
-
         if (!file) {
             return;
         }
-
         const reader = new FileReader();
-
         reader.onload = function () {
-
             const textContent = reader.result;
-
             const rows =
                 textContent.split(/\r?\n/);
-
             for (let i = 1; i < rows.length; i++) {
-
                 if (!rows[i].trim()) {
                     continue;
                 }
-
                 const row =
                     rows[i].split(",");
-
                 if (row.length >= 5) {
-
                     const vehicleInfo = {
                         make: row[0].trim(),
                         model: row[1].trim(),
@@ -175,21 +136,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         relationship: parseInt(row[3].trim()),
                         vin: row[4].trim()
                     };
-
                     roadReadyData.vehicles.push(
                         vehicleInfo
                     );
-
                     console.log(roadReadyData);
                 }
             }
 
             location.reload();
         };
-
         reader.readAsText(file);
     }
-
 
     // Vehicle value
     function loadVehicleValue(vehicle) {
@@ -197,5 +154,4 @@ document.addEventListener("DOMContentLoaded", function () {
         // Eventually call vehicle valuation API
 
     }
-
 });
