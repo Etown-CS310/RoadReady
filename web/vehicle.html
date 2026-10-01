@@ -8,6 +8,7 @@
     <title>My Vehicle | RoadReady</title>
 
     <link rel="stylesheet" href="../includes/styles.css">
+    <link rel="icon" href="data:,">
 </head>
 
 <body>
@@ -25,33 +26,21 @@
                     Import Vehicle CSV Data
                 </button>
 
-                <input
-                    type="file"
-                    id="csv-input"
-                    style="display: none;"
+                <input type="file" id="csv-input" style="display: none;"
                 >
             </div>
 
             <!-- Vehicle List -->
-            <div
-                class="vehicle-list"
-                id="vehicle-list"
-            ></div>
+            <div class="vehicle-list" id="vehicle-list"></div>
             
             <!-- Vehicle Details -->
             <section class="vehicle-detail-card">
                 <div class="vehicle-detail-header">
                     <div>
                         <h2 id="vehicle-title"></h2>
-                        <p
-                            id="vehicle-nickname"
-                            class="vehicle-nickname"
-                        ></p>
+                        <p id="vehicle-nickname" class="vehicle-nickname"></p>
                     </div>
-                    <span
-                        id="vehicle-mileage"
-                        class="mileage"
-                    ></span>
+                    <span id="vehicle-mileage" class="mileage"></span>
                 </div>
 
                 <div class="detail-grid">

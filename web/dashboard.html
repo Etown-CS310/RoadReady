@@ -1,29 +1,230 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Dashboard | RoadReady</title>
+<title>Dashboard | RoadReady</title>
 
-    <link rel="stylesheet" href="../includes/styles.css">
+<link rel="stylesheet" href="../includes/styles.css">
+<link rel="icon" href="data:,">
+
 </head>
 
 <body>
 
-    <main class="main">
+<main class="main">
 
-        <div id="dashboard-content"></div>
+    <!-- Dashboard Header -->
 
-    </main>
+    <header class="topbar">
 
-    <script src="../includes/navbar.js"></script>
-    <script src="../includes/footer.js"></script>
-    <script src="../includes/app.js"></script>
+        <div>
+            <h1>Dashboard</h1>
+            <p>Keep track of your vehicle and maintenance.</p>
+        </div>
 
-    <script src="../js/data.js"></script>
-    <script src="../js/dashboard.js"></script>
+        <div id="dashboard-user" class="profile"></div>
+
+    </header>
+
+
+    <!-- Vehicle -->
+
+    <section class="vehicle-card">
+
+        <div class="vehicle-info">
+
+            <h2 id="dashboard-vehicle-name"></h2>
+
+            <p id="dashboard-vehicle-details"></p>
+
+            <span class="mileage" id="dashboard-mileage"></span>
+
+        </div>
+
+
+        <div class="car-image">
+
+            <div class="vehicle-carousel">
+
+                <img id="vehiclePhoto" src="" alt="Vehicle">
+
+                <button id="previousButton">
+                    ‹
+                </button>
+
+                <span id="photoNumber">
+                    1 / 1
+                </span>
+
+                <button id="nextButton">
+                    ›
+                </button>
+
+            </div>
+
+
+            <label class="upload-button">
+
+                Add Vehicle Photos
+
+                <input type="file" id="vehicleUpload" accept="image/*" multiple>
+
+            </label>
+
+        </div>
+
+    </section>
+
+
+    <!-- Estimated Value -->
+
+    <section class="value-card" id="value-card">
+
+        <span class="value-label">
+            Estimated Value
+        </span>
+
+        <strong class="value-amount">
+            Loading...
+        </strong>
+
+        <small class="value-range"></small>
+
+    </section>
+
+
+    <!-- Statistics -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+
+            <div class="stat-label">
+                NEXT SERVICE
+            </div>
+
+            <div class="stat-number" id="next-service-number">
+                None
+            </div>
+
+            <div class="stat-sub" id="next-service-sub">
+                No upcoming service
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-label">
+                MAINTENANCE THIS YEAR
+            </div>
+
+            <div class="stat-number" id="maintenance-year-number">
+                0
+            </div>
+
+            <div class="stat-sub">
+                Services completed
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-label">
+                VEHICLE STATUS
+            </div>
+
+            <div class="stat-number">
+                Good
+            </div>
+
+            <div class="stat-sub">
+                Vehicle status
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- Maintenance Panels -->
+
+    <section class="content-grid">
+
+
+        <!-- Upcoming Maintenance -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <h2>
+                    Upcoming Maintenance
+                </h2>
+
+                <a href="maintenance.html" class="view-link">
+                    View all
+                </a>
+
+            </div>
+
+
+            <div id="dashboard-maintenance-list">
+
+                <div class="empty-state-small">
+                    No scheduled maintenance.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Recent Maintenance -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <h2>
+                    Recent Maintenance
+                </h2>
+
+                <a href="maintenance.html" class="view-link">
+                    View all
+                </a>
+
+            </div>
+
+
+            <div id="dashboard-history">
+
+                <div class="empty-state-small">
+                    No maintenance history yet.
+                </div>
+
+            </div>
+
+        </section>
+
+    </section>
+
+</main>
+
+
+<script src="../includes/navbar.js"></script>
+<script src="../includes/footer.js"></script>
+<script src="../includes/app.js"></script>
+
+<script src="../js/data.js"></script>
+<script src="../js/dashboard.js"></script>
 
 </body>
 

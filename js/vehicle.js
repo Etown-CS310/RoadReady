@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (valueContainer) {
         valueContainer.innerHTML =
             renderValueCard();
+            loadValueCard(vehicle);
     }
 
     // Import button
