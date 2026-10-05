@@ -74,41 +74,44 @@ document.addEventListener("DOMContentLoaded", function () {
         ${renderStats(stats)}
 
 
-        <section class="content-grid">
+        <section class="row g-4">
 
 
-            ${renderPanel(
-                "Upcoming Maintenance",
+           <div class="col-lg-6">
+        ${renderPanel(
+            "Upcoming Maintenance",
 
-                maintenance.length
-                    ? renderMaintenanceList(maintenance)
-                    : `
-                        <div class="empty-state-small">
-                            No scheduled maintenance.
-                        </div>
-                    `,
+            maintenance.length
+                ? renderMaintenanceList(maintenance)
+                : `
+                    <div class="text-muted py-3">
+                        No scheduled maintenance.
+                    </div>
+                `,
 
-                "maintenance.html"
-            )}
+            "maintenance.html"
+        )}
+    </div>
 
+    <div class="col-lg-6">
+        ${renderPanel(
+            "Recent Maintenance",
 
-            ${renderPanel(
-                "Recent Maintenance",
+            history.length
+                ? renderHistoryTable(
+                    history.slice(0, 3)
+                )
+                : `
+                    <div class="text-muted py-3">
+                        No maintenance history yet.
+                    </div>
+                `,
 
-                history.length
-                    ? renderHistoryTable(
-                        history.slice(0, 3)
-                    )
-                    : `
-                        <div class="empty-state-small">
-                            No maintenance history yet.
-                        </div>
-                    `,
+            "maintenance.html"
+        )}
+    </div>
 
-                "maintenance.html"
-            )}
-
-        </section>
+</section>
 
     `;
 

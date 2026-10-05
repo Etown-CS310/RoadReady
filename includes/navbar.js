@@ -6,27 +6,27 @@ function renderNavbar() {
         {
             href: "dashboard.html",
             label: "Dashboard",
-            icon: "▦"
+            icon: "fa-solid fa-table-cells-large"
         },
         {
             href: "maintenance.html",
             label: "Maintenance",
-            icon: "🔧"
+            icon: "fa-solid fa-wrench"
         },
         {
             href: "vehicle.html",
             label: "My Vehicle",
-            icon: "🚘"
+            icon: "fa-solid fa-car"
         },
         {
             href: "#",
             label: "Reminders",
-            icon: "🔔"
+            icon: "fa-solid fa-bell"
         },
         {
             href: "maintenance-guide.html",
             label: "Maintenance Guide",
-            icon: "📖"
+            icon: "fa-solid fa-book-open"
         }
     ];
 
@@ -37,7 +37,7 @@ function renderNavbar() {
 
         return `
             <a href="${item.href}" class="nav-item${active}">
-                <span class="nav-icon">${item.icon}</span>
+                <i class="${item.icon} nav-icon"></i>
                 ${item.label}
             </a>
         `;
@@ -48,7 +48,8 @@ function renderNavbar() {
         <aside class="sidebar">
 
             <div class="logo">
-                🚗 Road<span>Ready</span>
+                <i class="fa-solid fa-car"></i>
+                Road<span>Ready</span>
             </div>
 
             <nav class="main-nav">
@@ -58,7 +59,8 @@ function renderNavbar() {
             <div class="sidebar-bottom">
 
                 <div class="sidebar-user">
-                    👤 Sam Vossen
+                    <i class="fa-solid fa-user nav-icon"></i>
+                    Sam Vossen
                 </div>
 
                 <a
@@ -66,7 +68,7 @@ function renderNavbar() {
                     class="nav-item logout-link"
                     id="logoutButton"
                 >
-                    <span class="nav-icon">↪</span>
+                    <i class="fa-solid fa-right-from-bracket nav-icon"></i>
                     Log Out
                 </a>
 

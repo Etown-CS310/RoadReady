@@ -30,14 +30,15 @@ function formatCurrency(amount) {
 
 function renderTopbar(title, subtitle, userName = "Sam Vossen") {
     return `
-        <div class="topbar">
+        <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
-                <h1>${title}</h1>
-                <p>${subtitle}</p>
+                <h1 class="mb-1">${title}</h1>
+                <p class="text-muted mb-0">${subtitle}</p>
             </div>
 
-            <div class="profile">
-                👤 ${userName}
+            <div class="text-muted">
+                <i class="fa-solid fa-user me-2"></i>
+                ${userName}
             </div>
         </div>
     `;
@@ -50,77 +51,102 @@ function renderTopbar(title, subtitle, userName = "Sam Vossen") {
 
 function renderVehicleCard(vehicle) {
     return `
-        <section class="vehicle-card">
+        <section class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center g-4">
 
-            <div class="vehicle-info">
+                    <div class="col-md-7">
 
-                <h2>
-                    ${vehicle.year}
-                    ${vehicle.make}
-                    ${vehicle.model}
-                </h2>
+                        <h2 class="h3 mb-2">
+                            ${vehicle.year}
+                            ${vehicle.make}
+                            ${vehicle.model}
+                        </h2>
 
-                <p>
-                    ${vehicle.engine}
-                    &nbsp; • &nbsp;
-                    ${vehicle.transmission}
-                    &nbsp; • &nbsp;
-                    ${vehicle.bodyType}
-                </p>
+                        <p class="text-muted mb-3">
+                            ${vehicle.engine}
+                            &nbsp; • &nbsp;
+                            ${vehicle.transmission}
+                            &nbsp; • &nbsp;
+                            ${vehicle.bodyType}
+                        </p>
 
-                <span class="mileage">
-                    Current Mileage: ${formatMileage(vehicle.mileage)}
-                </span>
+                        <span class="badge text-bg-light">
+                            Current Mileage: ${formatMileage(vehicle.mileage)}
+                        </span>
 
-            </div>
+                    </div>
 
-            <div class="car-image">
+                    <div class="col-md-5 text-center">
 
-                <div class="vehicle-carousel">
+                        <div class="vehicle-carousel position-relative">
 
-                    <img 
-                        id="vehiclePhoto"
-                        src="${vehicle.image}"
-                        alt="${vehicle.make} ${vehicle.model}"
-                    >
+                            <img
+                                id="vehiclePhoto"
+                                src="${vehicle.image}"
+                                alt="${vehicle.make} ${vehicle.model}"
+                                class="img-fluid rounded"
+                            >
 
-                    <button id="previousButton" onclick="previousPhoto()">
-                        ‹
-                    </button>
+                            <button
+                                id="previousButton"
+                                onclick="previousPhoto()"
+                                class="btn btn-light position-absolute top-50 start-0 translate-middle-y"
+                                aria-label="Previous photo"
+                            >
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
 
-                    <span id="photoNumber">
-                        1 / 3
-                    </span>
+                            <span
+                                id="photoNumber"
+                                class="position-absolute bottom-0 start-50 translate-middle-x mb-2 badge text-bg-dark"
+                            >
+                                1 / 3
+                            </span>
 
-                    <button id="nextButton" onclick="nextPhoto()">
-                        ›
-                    </button>
+                            <button
+                                id="nextButton"
+                                onclick="nextPhoto()"
+                                class="btn btn-light position-absolute top-50 end-0 translate-middle-y"
+                                aria-label="Next photo"
+                            >
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+
+                        </div>
+
+                        <label class="btn btn-outline-primary mt-3">
+                            <i class="fa-solid fa-upload me-2"></i>
+                            Add Vehicle Photos
+                            <input
+                                type="file"
+                                id="vehicleUpload"
+                                accept="image/*"
+                                multiple
+                                hidden
+                            >
+                        </label>
+
+                    </div>
 
                 </div>
-
-                <label class="upload-button">
-                    Add Vehicle Photos
-                    <input 
-                        type="file"
-                        id="vehicleUpload"
-                        accept="image/*"
-                        multiple
-                    >
-                </label>
-
             </div>
-
         </section>
     `;
 }
 
+
+
 /* -----------------------------------------
    Vehicle Photo Carousel
 ----------------------------------------- */
+
 let vehiclePhotos = [];
 let currentPhoto = 0;
 
 function nextPhoto() {
+
+    if (vehiclePhotos.length === 0) return;
 
     currentPhoto++;
 
@@ -133,6 +159,8 @@ function nextPhoto() {
 
 function previousPhoto() {
 
+    if (vehiclePhotos.length === 0) return;
+
     currentPhoto--;
 
     if (currentPhoto < 0) {
@@ -144,52 +172,74 @@ function previousPhoto() {
 
 function showPhoto() {
 
-    document.getElementById("vehiclePhoto").src =
-        vehiclePhotos[currentPhoto];
+    if (vehiclePhotos.length === 0) return;
 
-    document.getElementById("photoNumber").textContent =
+    const vehiclePhoto = document.getElementById("vehiclePhoto");
+    const photoNumber = document.getElementById("photoNumber");
+
+    if (!vehiclePhoto || !photoNumber) return;
+
+    vehiclePhoto.src = vehiclePhotos[currentPhoto];
+
+    photoNumber.textContent =
         (currentPhoto + 1) + " / " + vehiclePhotos.length;
 }
 
 
 document.addEventListener("change", function(event) {
 
-    if (event.target.id === "vehicleUpload") {
+    if (event.target.id !== "vehicleUpload") return;
 
-        vehiclePhotos = [];
+    const files = Array.from(event.target.files);
 
-        for (let i = 0; i < event.target.files.length; i++) {
+    if (files.length === 0) return;
 
-            let photo = URL.createObjectURL(
-                event.target.files[i]
-            );
+    files.forEach(function(file) {
 
-            vehiclePhotos.push(photo);
-        }
+        const photo = URL.createObjectURL(file);
 
-        currentPhoto = 0;
+        vehiclePhotos.push(photo);
 
-        showPhoto();
-    }
+    });
 
+    currentPhoto = vehiclePhotos.length - files.length;
+
+    showPhoto();
+
+    // Allow the same file to be selected again later
+    event.target.value = "";
 });
+
+
 /* -----------------------------------------
    Statistics
 ----------------------------------------- */
 
 function renderStatCard(label, number, sub) {
     return `
-        <div class="stat-card">
-            <div class="stat-label">${label}</div>
-            <div class="stat-number">${number}</div>
-            <div class="stat-sub">${sub}</div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">
+                        ${label}
+                    </div>
+
+                    <div class="display-6 fw-semibold my-2">
+                        ${number}
+                    </div>
+
+                    <div class="text-muted">
+                        ${sub}
+                    </div>
+                </div>
+            </div>
         </div>
     `;
 }
 
 function renderStats(stats) {
     return `
-        <section class="stats">
+        <section class="row g-3 mb-4">
 
             ${renderStatCard(
                 "NEXT SERVICE",
@@ -219,6 +269,7 @@ function renderStats(stats) {
 ----------------------------------------- */
 
 function renderMaintenanceItem(item) {
+
     const labels = {
         soon: "DUE SOON",
         overdue: "OVERDUE",
@@ -228,19 +279,25 @@ function renderMaintenanceItem(item) {
     const label = labels[item.status] || item.status.toUpperCase();
 
     return `
-        <div class="maintenance-item">
+        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
 
             <div>
-                <div class="service-name">
+                <div class="fw-semibold">
                     ${item.name}
                 </div>
 
-                <div class="service-detail">
+                <div class="text-muted small">
                     ${item.detail}
                 </div>
             </div>
 
-            <span class="status ${item.status}">
+            <span class="badge ${
+                item.status === "overdue"
+                    ? "text-bg-danger"
+                    : item.status === "soon"
+                        ? "text-bg-warning"
+                        : "text-bg-success"
+            }">
                 ${label}
             </span>
 
@@ -258,20 +315,21 @@ function renderMaintenanceList(items) {
 ----------------------------------------- */
 
 function renderHistoryTable(rows) {
+
     if (!rows.length) {
         return `
-            <div class="empty-state-small">
+            <div class="text-muted py-3">
                 No maintenance history yet.
             </div>
         `;
     }
 
     return `
-        <div class="table-scroll">
+        <div class="table-responsive">
 
-            <table>
+            <table class="table table-hover align-middle mb-0">
 
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>Date</th>
                         <th>Service</th>
@@ -309,32 +367,44 @@ function renderHistoryTable(rows) {
 ----------------------------------------- */
 
 function renderPanel(title, bodyHTML, viewAllHref = null) {
+
     return `
-        <div class="panel">
+        <div class="card border-0 shadow-sm h-100">
 
-            <div class="panel-header">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4 px-4">
 
-                <h2>${title}</h2>
+                <h2 class="h5 mb-0">
+                    ${title}
+                </h2>
 
                 ${
                     viewAllHref
-                        ? `<a href="${viewAllHref}" class="view-link">View all</a>`
+                        ? `
+                            <a
+                                href="${viewAllHref}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                View all
+                            </a>
+                        `
                         : ""
                 }
 
             </div>
 
-            ${bodyHTML}
+            <div class="card-body px-4">
+                ${bodyHTML}
+            </div>
 
         </div>
     `;
 }
 
-/*
- * Vehicle value
- * Temporary: reads from data.js.
- * Later: replace the body of getVehicleValue with an API call.
- */
+
+/* -----------------------------------------
+   Vehicle Value
+----------------------------------------- */
+
 async function getVehicleValue(vehicle) {
 
     // FUTURE:
@@ -357,47 +427,109 @@ function formatMoney(n) {
     return "$" + Number(n).toLocaleString();
 }
 
-// Renders the card shell (loading state)
+
+/* -----------------------------------------
+   Vehicle Value Card
+----------------------------------------- */
+
 function renderValueCard() {
+
     return `
-        <section class="value-card" id="value-card">
-            <span class="value-label">Estimated Value</span>
-            <strong class="value-amount">Loading...</strong>
-            <small class="value-range"></small>
+        <section
+            class="card border-0 shadow-sm mb-4"
+            id="value-card"
+        >
+            <div class="card-body">
+
+                <div class="text-muted small text-uppercase fw-semibold">
+                    Estimated Value
+                </div>
+
+                <strong class="display-6 d-block my-2">
+                    Loading...
+                </strong>
+
+                <small class="text-muted d-block value-range"></small>
+
+            </div>
         </section>
     `;
 }
 
-// Fills the card in once data arrives. Call AFTER innerHTML is set.
+
+// Fills the card in once data arrives.
 async function loadValueCard(vehicle) {
+
     const card = document.getElementById("value-card");
+
     if (!card) return;
 
     try {
+
         const data = await getVehicleValue(vehicle);
 
         if (!data) {
+
             card.innerHTML = `
-                <span class="value-label">Estimated Value</span>
-                <strong class="value-amount">Unavailable</strong>
-                <small class="value-range">No valuation data yet.</small>
+                <div class="card-body">
+
+                    <div class="text-muted small text-uppercase fw-semibold">
+                        Estimated Value
+                    </div>
+
+                    <strong class="display-6 d-block my-2">
+                        Unavailable
+                    </strong>
+
+                    <small class="text-muted">
+                        No valuation data yet.
+                    </small>
+
+                </div>
             `;
+
             return;
         }
 
         card.innerHTML = `
-            <span class="value-label">Estimated Value</span>
-            <strong class="value-amount">${formatMoney(data.value)}</strong>
-            <small class="value-range">
-                ${formatMoney(data.low)} – ${formatMoney(data.high)}
-                • ${data.source}
-            </small>
+            <div class="card-body">
+
+                <div class="text-muted small text-uppercase fw-semibold">
+                    Estimated Value
+                </div>
+
+                <strong class="display-6 d-block my-2">
+                    ${formatMoney(data.value)}
+                </strong>
+
+                <small class="text-muted">
+                    ${formatMoney(data.low)}
+                    –
+                    ${formatMoney(data.high)}
+                    • ${data.source}
+                </small>
+
+            </div>
         `;
+
     } catch (err) {
+
         card.innerHTML = `
-            <span class="value-label">Estimated Value</span>
-            <strong class="value-amount">Unavailable</strong>
-            <small class="value-range">Couldn't load valuation.</small>
+            <div class="card-body">
+
+                <div class="text-muted small text-uppercase fw-semibold">
+                    Estimated Value
+                </div>
+
+                <strong class="display-6 d-block my-2">
+                    Unavailable
+                </strong>
+
+                <small class="text-muted">
+                    Couldn't load valuation.
+                </small>
+
+            </div>
         `;
     }
 }
