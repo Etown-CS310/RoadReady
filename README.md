@@ -1,41 +1,81 @@
 # RoadReady
 
-RoadReady is a vehicle maintenance dashboard that helps users track their vehicles, upcoming maintenance, and service history.
+RoadReady is a vehicle maintenance dashboard that helps users keep track of their vehicles, maintenance schedules, and service history.
 
-## Tech Stack
+It is designed for vehicle owners who want a simple way to see what maintenance is coming up and keep track of work that has already been completed.
 
-### Current
+## Tech Used
 
-* HTML
-* CSS
-* JavaScript
-* MySQL
-* Live Server
+- HTML
+- CSS
+- JavaScript
+- MySQL
+- VS Code Live Server
 
-### Future
+## Running RoadReady
 
-* Node.js backend
-* Cloud database
+Currently, RoadReady runs as a frontend website.
+
+1. Download or clone the project.
+2. Open the project in VS Code.
+3. Install the **Live Server** extension if you do not already have it.
+4. Open `index.html`.
+5. Right-click the file and select **Open with Live Server**.
+
+The website will open in your browser.
+
+## Current Features
+
+RoadReady currently includes:
+
+- Dashboard
+- Multiple vehicle support
+- Vehicle selection
+- Vehicle information
+- Upcoming maintenance
+- Maintenance history
+- Maintenance status
+- Maintenance guide
+- Shared navigation and footer
+- Temporary frontend data using JavaScript
+
+JavaScript is currently used to load vehicle data, select vehicles, display maintenance information, and manage temporary user selections with `localStorage`.
+
+## Screenshots
+
+### Dashboard
+
+![RoadReady Dashboard](images/dashboard.png)
+
+### My Vehicle
+
+![My Vehicle Page](images/myvehicle.png)
+
+### Maintenance
+
+![Maintenance Page](images/maintenance.png)
+
+### Maintenance Guide
+
+![Maintenance Guide](images/guide.png)
 
 ## Project Structure
 
 ```text
 RoadReady/
 ├── index.html
-│
+├── images/
 ├── includes/
 │   ├── styles.css
 │   ├── app.js
 │   ├── navbar.js
 │   └── footer.js
-│
 ├── js/
 │   ├── data.js
 │   ├── dashboard.js
 │   ├── vehicle.js
 │   ├── maintenance.js
 │   └── maintenance-guide.js
-│
 └── web/
     ├── dashboard.html
     ├── vehicle.html
@@ -43,108 +83,29 @@ RoadReady/
     └── maintenance-guide.html
 ```
 
-## Current Features
+## Current Limitations
 
-* Dashboard
-* Vehicle information
-* Multiple vehicles
-* Vehicle selection
-* Maintenance schedules
-* Maintenance history
-* Maintenance status
-* Maintenance guide
-* Shared navigation and footer
-* Temporary frontend data
+The current version is still frontend-only.
 
-## How It Works
+- Authentication is not implemented.
+- The frontend does not currently connect to MySQL.
+- Database changes cannot currently be made through the website.
+- Vehicle and maintenance data is temporary.
+- Reminders are not fully implemented.
+- Some planned features are not available yet.
 
-1. The user opens RoadReady.
-2. The dashboard loads temporary JavaScript data.
-3. The user can select a vehicle.
-4. RoadReady displays vehicle information and maintenance.
-5. Users can view upcoming and completed maintenance.
-6. Maintenance guide articles can be viewed by topic.
+## Future Plans
 
-## Database
+Future development will include:
 
-The MySQL database contains:
-
-* `users`
-* `vehicles`
-* `user_vehicles`
-* `maintenance_types`
-* `vehicle_maintenance_schedule`
-* `maintenance_history`
-* `maintenance_guide_articles`
-* `reminders`
-
-The MySQL database will remain the main source of truth when the backend is added.
-
-## Current Development
-
-The frontend currently uses:
-
-```text
-js/data.js
-```
-
-as temporary data instead of connecting directly to MySQL.
-
-`localStorage` is also used temporarily for selected vehicles and guide articles.
-
-The current frontend does not have working authentication or database writes.
-
-## Running Locally
-
-The current frontend can be run using VS Code with the Live Server extension.
-
-Open:
-
-```text
-index.html
-```
-
-with Live Server.
-
-## Future Backend
-
-The backend will eventually be built using:
-
-```text
-Node.js
-    ↓
-REST API
-    ↓
-MySQL
-```
-
-Planned API areas include:
-
-```text
-/api/auth
-/api/vehicles
-/api/maintenance
-/api/guides
-/api/reminders
-```
-
-## Future Features
-
-* User authentication
-* Vehicle sharing
-* Database-connected dashboard
-* Add and complete maintenance
-* Automated email reminders
-* Vehicle photos
-* VIN lookup
-* Recalls and known issues
-* Vehicle valuation
-* CSV/Excel imports
-* License and registration syncing
-* Expanded maintenance information
-
-## Development Goal
-
-Continue improving the RoadReady frontend first.
-
-Once the frontend is stable, connect it to the existing MySQL database through a Node.js backend.
+- Node.js backend
+- REST API
+- MySQL database connection
+- User authentication
+- Adding and completing maintenance records
+- Automated reminders
+- Vehicle photos
+- VIN lookup
+- Recall information
+- Vehicle valuation
+- Data imports
