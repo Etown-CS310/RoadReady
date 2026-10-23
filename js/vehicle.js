@@ -1,11 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const content = document.getElementById("vehicle-content");
-
     const vehicles = roadReadyData.vehicles;
 
     const selectedVehicleId =
-        Number(localStorage.getItem("selectedVehicleId")) || vehicles[0].id;
+        Number(localStorage.getItem("selectedVehicleId")) ||
+        vehicles[0].id;
 
     let vehicle = vehicles.find(
         v => v.id === selectedVehicleId
@@ -15,159 +14,76 @@ document.addEventListener("DOMContentLoaded", function () {
         vehicle = vehicles[0];
     }
 
-    content.innerHTML = `
-
-        ${renderTopbar(
+    // Render topbar
+    document.getElementById("vehicle-topbar").innerHTML =
+        renderTopbar(
             "My Vehicle",
             "Vehicles you own or have been given access to.",
             roadReadyData.user.name
-        )}
-        
-        <div id="import_csv">
-            <button id = "import">Import Vehicle CSV Data </button>
-            <input type="file" id="csv-input" style="display: none;" />
-        </div>
+        );
 
-        <div class="vehicle-list">
+    // Render vehicle list
+    const vehicleList =
+        document.getElementById("vehicle-list");
 
-            ${vehicles.map(v => `
+    vehicleList.innerHTML = vehicles.map(v => `
+        <a
+            href="vehicle.html"
+            class="vehicle-list-card ${v.id === vehicle.id ? "selected" : ""}"
+            data-vehicle-id="${v.id}"
+        >
+            <strong>
+                ${v.year} ${v.make} ${v.model}
+            </strong>
 
-                <a
-                    href="vehicle.html"
-                    class="vehicle-list-card ${v.id === vehicle.id ? "selected" : ""}"
-                    data-vehicle-id="${v.id}"
-                >
+            <span>
+                ${v.nickname || v.trim || "Vehicle"}
+            </span>
 
-                    <strong>
-                        ${v.year} ${v.make} ${v.model}
-                    </strong>
+            <small>
+                ${v.mileage.toLocaleString()} miles
+            </small>
 
-                    <span>
-                        ${v.nickname || v.trim || "Vehicle"}
-                    </span>
+        </a>
+    `).join("");
 
-                    <small>
-                        ${v.mileage.toLocaleString()} miles
-                    </small>
+    // Render selected vehicle information
+    document.getElementById("vehicle-title").textContent = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
+    document.getElementById("vehicle-nickname").textContent = vehicle.nickname || "";
+    document.getElementById("vehicle-mileage").textContent = `${vehicle.mileage.toLocaleString()} mi`;
+    document.getElementById("vehicle-vin").textContent = vehicle.vin;
+    document.getElementById("vehicle-trim").textContent = vehicle.trim;
+    document.getElementById("vehicle-engine").textContent = vehicle.engine;
+    document.getElementById("vehicle-transmission").textContent = vehicle.transmission;
+    document.getElementById("vehicle-body-type").textContent = vehicle.bodyType;
 
-                </a>
+    // Render vehicle value
+    const valueContainer =
+        document.getElementById("vehicle-value");
 
-            `).join("")}
-
-        </div>
-
-        <section class="vehicle-detail-card">
-
-            <div class="vehicle-detail-header">
-
-                <div>
-
-                    <h2>
-                        ${vehicle.year}
-                        ${vehicle.make}
-                        ${vehicle.model}
-                    </h2>
-
-                    <p class="vehicle-nickname">
-                        ${vehicle.nickname}
-                    </p>
-
-                </div>
-
-                <span class="mileage">
-                    ${vehicle.mileage.toLocaleString()} mi
-                </span>
-
-            </div>
-
-            <div class="detail-grid">
-
-                <div>
-                    <span>VIN</span>
-                    <strong>${vehicle.vin}</strong>
-                </div>
-
-                <div>
-                    <span>Trim</span>
-                    <strong>${vehicle.trim}</strong>
-                </div>
-
-                <div>
-                    <span>Engine</span>
-                    <strong>${vehicle.engine}</strong>
-                </div>
-
-                <div>
-                    <span>Transmission</span>
-                    <strong>${vehicle.transmission}</strong>
-                </div>
-
-                <div>
-                    <span>Body Type</span>
-                    <strong>${vehicle.bodyType}</strong>
-                </div>
-
-            </div>
-
-        </section>
-
-        ${renderValueCard()}
-
-    `;
-
-    loadValueCard(vehicle);
-
-    //Making event listener and function for my import button
-    window.addEventListener("load", importinit);
-    function importinit(){
-        let import_button = document.getElementById("import");
-        import_button.addEventListener("click", importCSV);
-    }
-    function importCSV(){
-        let fileInput = document.getElementById('csv-input');
-        fileInput.value = "";
-        fileInput.click();
-        fileInput.addEventListener('change', readFile(), { once: true });
-    }
-    function readFile() {
-        const fileInput = document.getElementById('csv-input');
-        const file = fileInput.files[0]; 
-        
-        if (file) {
-            const reader = new FileReader();
-            
-            reader.onload = processingCSV();
-            
-            function processingCSV() {
-                const textContent = reader.result; 
-                const data = parseCSVData(textContent);
-                
-                for (let i = 1; i < data.length; i++) {
-                const row = data[i];
-                
-                // Ensure the row isn't empty and has data fields
-                if (row.length >= 5) {
-                    // Need to change RoadReadyData to add in new vehicle from CSV
-                }
-            }
-            }
-            
-            reader.readAsText(file);
-        }
+    if (valueContainer) {
+        valueContainer.innerHTML =
+            renderValueCard();
+            loadValueCard(vehicle);
     }
 
-    function loadVehicleValue(vehicle) {
-    // Eventually call vehicle valuation API
-    // For now, use temporary data
-    }
+    // Import button
+    const importButton =
+        document.getElementById("import");
 
-    // Need to make ParseCSVData Function
+    importButton.addEventListener(
+        "click",
+        importCSV
+    );
+
+    // Vehicle selection
     document.querySelectorAll("[data-vehicle-id]")
         .forEach(card => {
 
             card.addEventListener("click", function () {
 
-                const id = Number(this.dataset.vehicleId);
+                const id =
+                    Number(this.dataset.vehicleId);
 
                 localStorage.setItem(
                     "selectedVehicleId",
@@ -178,4 +94,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
 
+    // Import CSV
+    function importCSV() {
+        const fileInput =
+            document.getElementById("csv-input");
+
+        fileInput.value = "";
+
+        fileInput.click();
+
+        fileInput.addEventListener(
+            "change",
+            readFile,
+            { once: true }
+        );
+    }
+
+    // Read CSV
+    function readFile() {
+        const fileInput =
+            document.getElementById("csv-input");
+        const file = fileInput.files[0];
+        if (!file) {
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function () {
+            const textContent = reader.result;
+            const rows =
+                textContent.split(/\r?\n/);
+            for (let i = 1; i < rows.length; i++) {
+                if (!rows[i].trim()) {
+                    continue;
+                }
+                const row =
+                    rows[i].split(",");
+                if (row.length >= 5) {
+                    const vehicleInfo = {
+                        make: row[0].trim(),
+                        model: row[1].trim(),
+                        year: row[2].trim(),
+                        relationship: parseInt(row[3].trim()),
+                        vin: row[4].trim()
+                    };
+                    roadReadyData.vehicles.push(
+                        vehicleInfo
+                    );
+                    console.log(roadReadyData);
+                }
+            }
+
+            location.reload();
+        };
+        reader.readAsText(file);
+    }
+
+    // Vehicle value
+    function loadVehicleValue(vehicle) {
+
+        // Eventually call vehicle valuation API
+
+    }
 });
