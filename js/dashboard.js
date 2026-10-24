@@ -173,3 +173,27 @@ if (history.length === 0) {
 // Estimated Vehicle Value
 loadValueCard(vehicle);
 });
+
+// Set up the light and dark mode toggle
+const themeToggle = document.getElementById("theme-toggle");
+
+// Load the saved theme
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+    themeToggle.textContent = "Light Mode";
+}
+
+// Switch themes when the button is clicked
+themeToggle.addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+
+    const isDark = document.body.classList.contains("dark-mode");
+
+    localStorage.setItem("darkMode", isDark);
+
+    if (isDark) {
+        themeToggle.textContent = "Light Mode";
+    } else {
+        themeToggle.textContent = "Dark Mode";
+    }
+});
