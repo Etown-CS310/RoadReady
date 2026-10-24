@@ -148,11 +148,4 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         reader.readAsText(file);
     }
-
-    // Vehicle value
-    function loadVehicleValue(vehicle) {
-
-        // Eventually call vehicle valuation API
-
-    }
 });

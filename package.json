@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/Etown-CS310/RoadReady#readme",
   "dependencies": {
-    "dotenv": "^18.0.4",
+    "dotenv": "^18.0.9",
     "express": "^5.2.1",
     "mysql2": "^3.24.4"
   }
