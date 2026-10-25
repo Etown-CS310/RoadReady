@@ -1,30 +1,35 @@
-function renderNavbar() {
+async function renderNavbar() {
 
     const currentPage = window.location.pathname.split("/").pop();
 
     const navItems = [
         {
-            href: "dashboard.html",
+            href: "/web/dashboard.html",
+            file: "dashboard.html",
             label: "Dashboard",
             icon: "fa-solid fa-table-cells-large"
         },
         {
-            href: "maintenance.html",
+            href: "/web/maintenance.html",
+            file: "maintenance.html",
             label: "Maintenance",
             icon: "fa-solid fa-wrench"
         },
         {
-            href: "vehicle.html",
+            href: "/web/vehicle.html",
+            file: "vehicle.html",
             label: "My Vehicle",
             icon: "fa-solid fa-car"
         },
         {
             href: "#",
+            file: "",
             label: "Reminders",
             icon: "fa-solid fa-bell"
         },
         {
-            href: "maintenance-guide.html",
+            href: "/web/maintenance-guide.html",
+            file: "maintenance-guide.html",
             label: "Maintenance Guide",
             icon: "fa-solid fa-book-open"
         }
@@ -33,7 +38,7 @@ function renderNavbar() {
     const navHTML = navItems.map(item => {
 
         const active =
-            currentPage === item.href ? " active" : "";
+            currentPage === item.file ? " active" : "";
 
         return `
             <a href="${item.href}" class="nav-item${active}">
@@ -43,6 +48,26 @@ function renderNavbar() {
         `;
 
     }).join("");
+
+    // Get the currently logged-in user
+    let userName = "User";
+
+    try {
+        const response = await fetch("/api/auth/me", {
+            credentials: "include"
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            if (data.success && data.user) {
+                userName = data.user.fullName;
+            }
+        }
+
+    } catch (error) {
+        console.error("Could not load logged-in user:", error);
+    }
 
     const navbar = `
         <aside class="sidebar">
@@ -60,11 +85,11 @@ function renderNavbar() {
 
                 <div class="sidebar-user">
                     <i class="fa-solid fa-user nav-icon"></i>
-                    Sam Vossen
+                    ${userName}
                 </div>
 
                 <a
-                    href="#"
+                    href="/forms/logout.html"
                     class="nav-item logout-link"
                     id="logoutButton"
                 >
@@ -81,26 +106,6 @@ function renderNavbar() {
         "afterbegin",
         navbar
     );
-
-    const logoutButton =
-        document.getElementById("logoutButton");
-
-    if (logoutButton) {
-
-        logoutButton.addEventListener(
-            "click",
-            function (event) {
-
-                event.preventDefault();
-
-                alert(
-                    "Logout will be implemented when authentication is added."
-                );
-
-            }
-        );
-
-    }
 }
 
 document.addEventListener(
