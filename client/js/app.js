@@ -1,10 +1,20 @@
 /*
- * RoadReady shared application JavaScript.
+ * Filename: /client/js/app.js
  *
- * This file currently contains frontend-only helpers.
+ * This file contains shared RoadReady frontend application logic.
  *
- * Later this can be expanded to communicate with the
- * PHP backend/API and database.
+ * Responsibilities:
+ * - Provide JavaScript functionality shared across RoadReady pages.
+ * - Initialize shared frontend behavior when required.
+ * - Provide reusable client-side application functionality.
+ *
+ * This file does NOT:
+ * - Contain page-specific database queries.
+ * - Communicate directly with MySQL.
+ * - Handle server-side authentication.
+ *
+ * Page-specific functionality belongs in the appropriate files under
+ * /client/js/pages/ or /client/js/auth/.
  */
 
 

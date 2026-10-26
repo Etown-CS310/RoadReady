@@ -1,3 +1,19 @@
+/*
+ * Filename: /client/components/navbar.js
+ *
+ * This file provides the shared RoadReady navigation component.
+ *
+ * Responsibilities:
+ * - Create the shared site navigation.
+ * - Provide navigation links between RoadReady pages.
+ * - Provide consistent navigation markup across the application.
+ *
+ * This file does NOT:
+ * - Query MySQL.
+ * - Manage server-side authentication.
+ * - Load page-specific application data.
+ */
+
 async function renderNavbar() {
 
     const currentPage = window.location.pathname.split("/").pop();

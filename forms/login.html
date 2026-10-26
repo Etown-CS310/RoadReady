@@ -1,3 +1,25 @@
+<!--
+ * Filename: /forms/login.html
+ *
+ * This file provides the RoadReady login page.
+ *
+ * Responsibilities:
+ * - Display the RoadReady login form.
+ * - Collect the user's email and password.
+ * - Display login errors.
+ * - Provide the login button and authentication interface.
+ * - Load the shared RoadReady stylesheet and external UI libraries.
+ * - Load the RoadReady login JavaScript.
+ *
+ * This file does NOT:
+ * - Authenticate users directly.
+ * - Query MySQL.
+ * - Create user sessions directly.
+ *
+ * Login processing is handled by /client/js/auth/login.js
+ * and /server/routes/auth.js.
+-->
+ 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +42,7 @@
     >
 
     <!-- RoadReady Styles -->
-    <link rel="stylesheet" href="../includes/styles.css">
+    <link rel="stylesheet" href="/client/css/styles.css">
 </head>
 
 <body>
@@ -92,7 +114,7 @@
 
     </main>
 
-    <script src="../js/login.js"></script>
+    <script src="/client/js/auth/login.js"></script>
 
 </body>
 

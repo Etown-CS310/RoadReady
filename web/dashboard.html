@@ -1,3 +1,24 @@
+<!--
+ * Filename: /web/dashboard.html
+ *
+ * This file provides the user-facing RoadReady Dashboard page.
+ *
+ * Responsibilities:
+ * - Define the Dashboard page structure.
+ * - Provide containers for dashboard data.
+ * - Load shared RoadReady components and styling.
+ * - Load the Dashboard JavaScript interface.
+ * - Load the authentication guard.
+ *
+ * This file does NOT:
+ * - Query MySQL directly.
+ * - Process database records.
+ * - Authenticate users directly.
+ *
+ * Dashboard data is loaded through /client/js/pages/dashboard.js
+ * and /server/routes/dashboard.js.
+-->
+ 
 <!DOCTYPE html>
 
 <html lang="en">
@@ -6,19 +27,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Dashboard | RoadReady</title>
+    <title>Dashboard | RoadReady</title>
 
-<link rel="stylesheet" href="../includes/styles.css">
-<link rel="icon" href="data:,">
+    <link rel="icon" href="data:,">
 
     <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    >
 
     <!-- RoadReady Styles -->
-    <link rel="stylesheet" href="../includes/styles.css">
+    <link rel="stylesheet" href="/client/css/styles.css">
 </head>
 
 <body>
@@ -29,12 +55,6 @@
 
     <header class="topbar">
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="../includes/navbar.js"></script>
-    <script src="../includes/footer.js"></script>
-    <script src="../includes/app.js"></script>
         <div>
             <h1>Dashboard</h1>
             <p>Keep track of your vehicle and maintenance.</p>
@@ -85,7 +105,12 @@
 
                 Add Vehicle Photos
 
-                <input type="file" id="vehicleUpload" accept="image/*" multiple>
+                <input
+                    type="file"
+                    id="vehicleUpload"
+                    accept="image/*"
+                    multiple
+                >
 
             </label>
 
@@ -110,10 +135,13 @@
 
     </section>
 
+
     <!-- Dark Mode Toggle -->
+
     <button id="theme-toggle" class="btn btn-secondary">
-    🌙 Dark Mode
+        🌙 Dark Mode
     </button>
+
 
     <!-- Statistics -->
 
@@ -237,14 +265,21 @@
 </main>
 
 
-<script src="../includes/navbar.js"></script>
-<script src="../includes/footer.js"></script>
-<script src="../includes/app.js"></script>
+<!-- Bootstrap JavaScript -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
 
-<script src="../js/data.js"></script>
-<script src="../js/dashboard.js"></script>
+<!-- RoadReady Components -->
+<script src="/client/components/navbar.js"></script>
+<script src="/client/components/footer.js"></script>
+<script src="/client/js/app.js"></script>
 
-    <script src="../js/auth-guard.js"></script>
+<!-- Dashboard -->
+<script src="/client/js/pages/dashboard.js"></script>
+
+<!-- Authentication -->
+<script src="/client/js/auth/auth-guard.js"></script>
 
 </body>
 

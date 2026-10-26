@@ -1,3 +1,21 @@
+/*
+ * Filename: /client/css/styles.css
+ *
+ * This file contains the shared RoadReady stylesheet.
+ *
+ * Responsibilities:
+ * - Define the application's shared visual design.
+ * - Style navigation and footer components.
+ * - Style page layouts and common UI components.
+ * - Style buttons, panels, cards, forms, tables, and status elements.
+ * - Provide responsive styling for different screen sizes.
+ *
+ * This file does NOT:
+ * - Contain JavaScript functionality.
+ * - Communicate with the server or database.
+ * - Load application data.
+ */
+ 
 * {
   box-sizing: border-box;
   margin: 0;

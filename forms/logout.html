@@ -1,3 +1,23 @@
+<!--
+ * Filename: /forms/logout.html
+ *
+ * This file provides the RoadReady logout page.
+ *
+ * Responsibilities:
+ * - Display the logout status to the user.
+ * - Inform the user that their RoadReady session is ending.
+ * - Load the shared RoadReady stylesheet and external UI libraries.
+ * - Load the RoadReady logout JavaScript.
+ *
+ * This file does NOT:
+ * - Destroy the user session directly.
+ * - Query MySQL.
+ * - Manage authentication directly.
+ *
+ * Logout processing is handled by /client/js/auth/logout.js
+ * and /server/routes/auth.js.
+-->
+ 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +40,7 @@
     >
 
     <!-- RoadReady Styles -->
-    <link rel="stylesheet" href="../includes/styles.css">
+    <link rel="stylesheet" href="/client/css/styles.css">
 </head>
 
 <body>
@@ -53,7 +73,7 @@
 
     </main>
 
-    <script src="../js/logout.js"></script>
+    <script src="/client/js/auth/logout.js"></script>
 
 </body>
 

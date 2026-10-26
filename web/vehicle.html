@@ -1,3 +1,27 @@
+<!--
+ * Filename: /web/vehicle.html
+ *
+ * This file provides the user-facing RoadReady My Vehicle page.
+ *
+ * Responsibilities:
+ * - Define the My Vehicle page structure.
+ * - Provide the vehicle selection interface.
+ * - Display selected vehicle information.
+ * - Provide the vehicle CSV import interface.
+ * - Provide the vehicle value display area.
+ * - Load shared RoadReady components and styling.
+ * - Load the Vehicle JavaScript interface.
+ * - Load the authentication guard.
+ *
+ * This file does NOT:
+ * - Query MySQL directly.
+ * - Process vehicle database records directly.
+ * - Manage authentication directly.
+ *
+ * Vehicle data is loaded through /client/js/pages/vehicle.js
+ * and /server/routes/vehicles.js.
+-->
+ 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,7 +38,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
     <!-- RoadReady Styles -->
-    <link rel="stylesheet" href="../includes/styles.css">
+    <link rel="stylesheet" href="/client/css/styles.css">
     <link rel="icon" href="data:,">
 </head>
 
@@ -82,17 +106,19 @@
         </div>
     </main>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="../includes/navbar.js"></script>
-    <script src="../includes/footer.js"></script>
-    <script src="../includes/app.js"></script>
+<!-- RoadReady Components -->
+<script src="/client/components/navbar.js"></script>
+<script src="/client/components/footer.js"></script>
+<script src="/client/js/app.js"></script>
 
-    <script src="../js/data.js"></script>
-    <script src="../js/vehicle.js"></script>
+<!-- Vehicle -->
+<script src="/client/js/pages/vehicle.js"></script>
 
-    <script src="../js/auth-guard.js"></script>
+<!-- Authentication -->
+<script src="/client/js/auth/auth-guard.js"></script>
     
 </body>
 

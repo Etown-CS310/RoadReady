@@ -1,3 +1,21 @@
+/*
+ * Filename: /client/js/auth/logout.js
+ *
+ * This file handles RoadReady user logout.
+ *
+ * Responsibilities:
+ * - Send the logout request to the authentication API.
+ * - End the user's authenticated session through the server.
+ * - Redirect the user to the login page after logout.
+ *
+ * This file does NOT:
+ * - Directly modify the database.
+ * - Destroy sessions directly.
+ * - Authenticate user credentials.
+ *
+ * Session management is handled by the server.
+ */
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const message =

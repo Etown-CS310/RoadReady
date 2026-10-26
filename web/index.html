@@ -1,3 +1,22 @@
+<!--
+ * Filename: /web/index.html
+ *
+ * This file is the entry point for the RoadReady application.
+ *
+ * Responsibilities:
+ * - Provide the initial RoadReady page requested at "/".
+ * - Load the shared RoadReady stylesheet.
+ * - Redirect users to the RoadReady login page.
+ * - Provide a fallback login link when JavaScript is disabled.
+ *
+ * This file does NOT:
+ * - Authenticate users.
+ * - Process login credentials.
+ * - Communicate directly with MySQL.
+ *
+ * Login functionality is handled by /client/js/auth/login.js.
+-->
+ 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +26,7 @@
 
     <title>RoadReady</title>
 
-    <link rel="stylesheet" href="includes/styles.css">
+    <link rel="stylesheet" href="/client/css/styles.css">
 </head>
 
 <body>

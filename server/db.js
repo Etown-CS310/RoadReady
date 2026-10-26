@@ -1,3 +1,23 @@
+/*
+ * Filename: /server/db.js
+ *
+ * This file configures the MySQL connection pool used by RoadReady.
+ *
+ * Responsibilities:
+ * - Load database configuration from environment variables.
+ * - Create the MySQL connection pool.
+ * - Configure connection pooling and connection limits.
+ * - Export the database pool for use by server routes.
+ *
+ * This file does NOT:
+ * - Define API routes.
+ * - Handle user authentication.
+ * - Render pages.
+ * - Contain frontend JavaScript.
+ *
+ * Database queries are performed by the appropriate server route files.
+ */
+
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 

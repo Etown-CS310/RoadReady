@@ -1,3 +1,24 @@
+/*
+ * Filename: /client/js/auth/login.js
+ *
+ * This file handles the RoadReady login form.
+ *
+ * Responsibilities:
+ * - Listen for login form submission.
+ * - Collect the user's login credentials.
+ * - Send login credentials to the authentication API.
+ * - Display login errors.
+ * - Disable the login button while authentication is processing.
+ * - Redirect successfully authenticated users to the dashboard.
+ *
+ * This file does NOT:
+ * - Directly access MySQL.
+ * - Create sessions directly.
+ * - Verify passwords directly.
+ *
+ * Authentication is performed by /server/routes/auth.js.
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const form = document.getElementById("loginForm");
