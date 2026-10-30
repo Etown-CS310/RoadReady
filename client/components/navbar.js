@@ -38,12 +38,7 @@ async function renderNavbar() {
             icon: "fa-solid fa-car"
         },
         {
-<<<<<<< HEAD:client/components/navbar.js
-            href: "#",
-            file: "",
-=======
             href: "reminders.html",
->>>>>>> 5f9d2f8 (Established the reminders page):includes/navbar.js
             label: "Reminders",
             icon: "fa-solid fa-bell"
         },
