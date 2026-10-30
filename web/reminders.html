@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reminders | RoadReady</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="../includes/styles.css">
+    <link rel="icon" href="data:,">
+</head>
+
+<body>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1>Reminders</h1>
+                <p>Stay ahead of your next service and keep your vehicle on track.</p>
+            </div>
+
+            <div class="profile">
+                <i class="fa-solid fa-bell me-2"></i>
+                Maintenance alerts
+            </div>
+        </header>
+
+        <div class="vehicle-selector">
+            <label for="reminderVehicle">Vehicle</label>
+            <select id="reminderVehicle"></select>
+        </div>
+
+        <!-- Maintenance summary -->
+        <section class="reminder-stats" aria-label="Reminder summary">
+
+            <div class="reminder-stat">
+                <span class="reminder-stat-label">OVERDUE</span>
+                <strong id="overdueCount">0</strong>
+                <span>Needs attention</span>
+            </div>
+
+            <div class="reminder-stat">
+                <span class="reminder-stat-label">DUE SOON</span>
+                <strong id="soonCount">0</strong>
+                <span>Coming up next</span>
+            </div>
+
+            <div class="reminder-stat">
+                <span class="reminder-stat-label">UPCOMING</span>
+                <strong id="upcomingCount">0</strong>
+                <span>On your schedule</span>
+            </div>
+
+        </section>
+
+        <!-- Reminder list -->
+        <section class="panel reminder-panel">
+
+            <div class="panel-header reminder-panel-header">
+                <div>
+                    <h2>Maintenance Reminders</h2>
+                    <p class="reminder-intro">
+                        Review scheduled service or mark a job complete.
+                    </p>
+                </div>
+
+                <button class="button" id="showAddReminder" type="button">
+                    <i class="fa-solid fa-plus me-1"></i>
+                    Add Reminder
+                </button>
+            </div>
+
+            <!-- Reminder filters -->
+            <div class="reminder-filters" role="group" aria-label="Filter reminders">
+
+                <button type="button" class="reminder-filter active" data-filter="all">
+                    All
+                </button>
+
+                <button type="button" class="reminder-filter" data-filter="overdue">
+                    Overdue
+                </button>
+
+                <button type="button" class="reminder-filter" data-filter="soon">
+                    Due Soon
+                </button>
+
+                <button type="button" class="reminder-filter" data-filter="good">
+                    Upcoming
+                </button>
+
+                <button type="button" class="reminder-filter" data-filter="completed">
+                    Completed
+                </button>
+
+            </div>
+
+            <div id="reminderList" aria-live="polite">
+                <div class="empty-state-small">Loading reminders...</div>
+            </div>
+
+        </section>
+
+        <!-- Add reminder form -->
+        <section class="panel reminder-form-panel" id="addReminderPanel" hidden>
+
+            <div class="panel-header">
+                <h2>Add a Reminder</h2>
+
+                <button
+                    type="button"
+                    class="reminder-close"
+                    id="closeAddReminder"
+                    aria-label="Close form">
+                    &times;
+                </button>
+            </div>
+
+            <form id="reminderForm" class="form-grid">
+
+                <label for="reminderName">
+                    Maintenance or reminder
+                </label>
+
+                <input
+                    id="reminderName"
+                    type="text"
+                    maxlength="80"
+                    placeholder="e.g. State inspection"
+                    required>
+
+                <label for="reminderDueDate">
+                    Due date (optional)
+                </label>
+
+                <input id="reminderDueDate" type="date">
+
+                <label for="reminderDueMileage">
+                    Due mileage (optional)
+                </label>
+
+                <input
+                    id="reminderDueMileage"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 145000">
+
+                <label for="reminderNotes">
+                    Notes (optional)
+                </label>
+
+                <textarea
+                    id="reminderNotes"
+                    rows="3"
+                    maxlength="255"
+                    placeholder="Add any useful details"></textarea>
+
+                <p class="reminder-help">
+                    Add a date, mileage, or both. Custom reminders are saved in this browser.
+                </p>
+
+                <div class="reminder-form-actions">
+
+                    <button class="button" type="submit">
+                        Save Reminder
+                    </button>
+
+                    <button
+                        class="button button-secondary"
+                        type="button"
+                        id="cancelAddReminder">
+                        Cancel
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <!-- Existing RoadReady scripts -->
+    <script src="../includes/navbar.js"></script>
+    <script src="../includes/footer.js"></script>
+    <script src="../includes/app.js"></script>
+    <script src="../js/data.js"></script>
+    <script src="../js/reminders.js"></script>
+
+</body>
+</html>
