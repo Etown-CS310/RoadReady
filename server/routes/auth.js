@@ -146,4 +146,68 @@ router.get("/me", (req, res) => {
 });
 
 
+/*
+ * POST /api/auth/dev-login
+ *
+ * TEMPORARY DEVELOPMENT LOGIN.
+ * Logs into the first account in the users table.
+ */
+router.post("/dev-login", async (req, res) => {
+
+    // Prevent this endpoint from being used in production.
+    if (process.env.NODE_ENV === "production") {
+        return res.status(403).json({
+            success: false,
+            message: "Development login is disabled."
+        });
+    }
+
+    try {
+
+        const [rows] = await db.query(
+            `
+            SELECT
+                id,
+                email,
+                full_name,
+                avatar_url
+            FROM users
+            ORDER BY id ASC
+            LIMIT 1
+            `
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No accounts found."
+            });
+        }
+
+        const user = rows[0];
+
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            fullName: user.full_name,
+            avatarUrl: user.avatar_url
+        };
+
+        res.json({
+            success: true,
+            user: req.session.user
+        });
+
+    } catch (error) {
+
+        console.error("Development login error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Development login failed."
+        });
+    }
+});
+
+
 module.exports = router;

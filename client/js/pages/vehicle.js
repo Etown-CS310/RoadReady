@@ -19,7 +19,7 @@
  * - Manage authentication directly.
  * - Directly modify vehicle records in MySQL.
  *
- * Vehicle data is provided by /server/routes/vehicles.js.
+ * Vehicle data is provided by /server/routes/vehicle.js.
  */
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -50,6 +50,241 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const vehicleBodyType =
         document.getElementById("vehicle-body-type");
+
+
+    // ------------------------------------------
+    // CSV IMPORT
+    //
+    // Set up BEFORE loading vehicles. Previously this lived at the
+    // bottom of the load try-block, so a user with zero vehicles
+    // (the exact person who needs to import) hit an early `return`
+    // and never got a working Import button.
+    // ------------------------------------------
+
+    const importButton = document.getElementById("import");
+    const csvInput = document.getElementById("csv-input");
+
+    // Only the make/model/year/mileage columns are required.
+    // The rest are optional and default to empty.
+    const requiredHeaders = [
+        "make",
+        "model",
+        "model_year",
+        "current_mileage"
+    ];
+
+    const knownHeaders = [
+        "vin",
+        "nickname",
+        "make",
+        "model",
+        "model_year",
+        "trim",
+        "engine",
+        "transmission",
+        "body_type",
+        "current_mileage",
+        "image_url"
+    ];
+
+    if (importButton && csvInput) {
+
+        importButton.addEventListener("click", function () {
+            // Reset so choosing the same file twice still fires "change".
+            csvInput.value = "";
+            csvInput.click();
+        });
+
+        // Attached once, instead of on every button click.
+        csvInput.addEventListener("change", readFile);
+    }
+
+
+    // Parse CSV while respecting quoted fields.
+    function parseCSV(text) {
+
+        const rows = [];
+        let row = [];
+        let value = "";
+        let insideQuotes = false;
+
+        for (let i = 0; i < text.length; i++) {
+
+            const char = text[i];
+            const nextChar = text[i + 1];
+
+            if (char === '"' && insideQuotes && nextChar === '"') {
+                value += '"';
+                i++;
+            }
+
+            else if (char === '"') {
+                insideQuotes = !insideQuotes;
+            }
+
+            else if (char === "," && !insideQuotes) {
+                row.push(value.trim());
+                value = "";
+            }
+
+            else if ((char === "\n" || char === "\r") && !insideQuotes) {
+
+                if (char === "\r" && nextChar === "\n") {
+                    i++;
+                }
+
+                row.push(value.trim());
+
+                if (row.some(field => field !== "")) {
+                    rows.push(row);
+                }
+
+                row = [];
+                value = "";
+            }
+
+            else {
+                value += char;
+            }
+        }
+
+        if (insideQuotes) {
+            throw new Error("The CSV contains an unclosed quotation mark.");
+        }
+
+        row.push(value.trim());
+
+        if (row.some(field => field !== "")) {
+            rows.push(row);
+        }
+
+        return rows;
+    }
+
+
+    async function readFile() {
+
+        const file = csvInput.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+            alert("Please select a CSV file.");
+            return;
+        }
+
+        try {
+
+            const csvText = await file.text();
+
+            const rows = parseCSV(csvText);
+
+            if (rows.length < 2) {
+                throw new Error(
+                    "The CSV does not contain any vehicle records."
+                );
+            }
+
+            // Extract column names (strip BOM, normalize case/spacing).
+            const headers = rows[0].map(header =>
+                header
+                    .replace(/^﻿/, "")
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[\s-]+/g, "_")
+            );
+
+            const missingHeaders = requiredHeaders.filter(
+                header => !headers.includes(header)
+            );
+
+            if (missingHeaders.length > 0) {
+                throw new Error(
+                    "Missing CSV columns: " + missingHeaders.join(", ")
+                );
+            }
+
+            // Convert CSV rows into vehicle objects.
+            const vehicles = rows.slice(1).map((row, index) => {
+
+                // Allow rows with trailing empty cells trimmed off,
+                // but reject rows with extra data.
+                if (row.length > headers.length) {
+                    throw new Error(
+                        `Row ${index + 2} has more columns than the header row.`
+                    );
+                }
+
+                const vehicle = {};
+
+                headers.forEach((header, columnIndex) => {
+                    if (knownHeaders.includes(header)) {
+                        vehicle[header] = row[columnIndex] ?? "";
+                    }
+                });
+
+                return vehicle;
+            });
+
+            // Send vehicles to the backend.
+            // NOTE: must match the route the GET request uses
+            // (/api/vehicle, singular). The old "/api/vehicles/import"
+            // path did not exist, so Express returned an HTML 404 page,
+            // which produced "Server returned something other than JSON".
+            const response = await fetch("/api/vehicle/import", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                credentials: "include",
+
+                body: JSON.stringify({
+                    vehicles: vehicles
+                })
+            });
+
+            const responseText = await response.text();
+
+            let data;
+
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error(
+                    "Import response was not JSON:",
+                    response.status,
+                    responseText
+                );
+
+                throw new Error(
+                    `Server returned status ${response.status} with a non-JSON response. ` +
+                    "Check that the import route exists and the request body is not too large."
+                );
+            }
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message || "Vehicle import failed."
+                );
+            }
+
+            alert(data.message);
+
+            // Refresh vehicle information from the database.
+            window.location.reload();
+
+        } catch (error) {
+
+            console.error("CSV import error:", error);
+
+            alert("Import failed: " + error.message);
+        }
+    }
 
 
     try {
@@ -303,92 +538,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             ) {
                 loadValueCard(vehicle);
             }
-        }
-
-
-        // ------------------------------------------
-        // CSV IMPORT
-        // ------------------------------------------
-
-        const importButton =
-            document.getElementById("import");
-
-        if (importButton) {
-
-            importButton.addEventListener(
-                "click",
-                importCSV
-            );
-        }
-
-
-        function importCSV() {
-
-            const fileInput =
-                document.getElementById(
-                    "csv-input"
-                );
-
-            if (!fileInput) {
-                return;
-            }
-
-            fileInput.value = "";
-
-            fileInput.click();
-
-            fileInput.addEventListener(
-                "change",
-                readFile,
-                { once: true }
-            );
-        }
-
-
-        function readFile() {
-
-            const fileInput =
-                document.getElementById(
-                    "csv-input"
-                );
-
-            const file =
-                fileInput.files[0];
-
-            if (!file) {
-                return;
-            }
-
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                function () {
-
-                    /*
-                     * CSV import is intentionally
-                     * not connected to MySQL yet.
-                     *
-                     * The old version pushed directly
-                     * into roadReadyData. That no
-                     * longer applies now that vehicles
-                     * come from the database.
-                     */
-
-                    console.log(
-                        "CSV loaded:",
-                        reader.result
-                    );
-
-                    alert(
-                        "CSV was loaded, but database import is not implemented yet."
-                    );
-                };
-
-
-            reader.readAsText(file);
         }
 
 

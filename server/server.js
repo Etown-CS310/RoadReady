@@ -28,7 +28,9 @@
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
-require("dotenv").config();
+require('dotenv').config({ 
+  path: path.resolve(__dirname, '../includes/.env') 
+});
 
 const db = require("./db");
 
