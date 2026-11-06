@@ -150,16 +150,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         // --------------------------------------------------
 
         const maintenanceYearNumber =
-            document.getElementById("maintenance-year-number");
+        document.getElementById("maintenance-year-number");
+
+        const maintenanceYearSub =
+        maintenanceYearNumber.parentElement.querySelector(".stat-sub");
 
 
         if (maintenanceYearNumber) {
 
+            const servicesCompleted =
+            Number(data.maintenanceThisYear.services_completed || 0);
+
+            const totalCost =
+            Number(data.maintenanceThisYear.total_cost_cents || 0) / 100;
+
             maintenanceYearNumber.textContent =
-                Number(
-                    data.maintenanceThisYear.services_completed || 0
-                );
-        }
+            servicesCompleted.toLocaleString();
+
+            if (maintenanceYearSub) {
+
+                maintenanceYearSub.textContent =
+                    `${servicesCompleted === 1 ? "Service" : "Services"} completed • $${totalCost.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+            })} spent`;
+            }
+        }  
 
 
         // --------------------------------------------------
