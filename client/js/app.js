@@ -416,61 +416,19 @@ function renderPanel(title, bodyHTML, viewAllHref = null) {
    Vehicle Value
 ----------------------------------------- */
 
-async function getVehicleValue(vehicle) {
+async function getVehicleValue(vehicleId) {
+    const response = await fetch(
+        "/api/vehicle/" + encodeURIComponent(vehicleId) + "/value",
+        { credentials: "include" }
+    );
 
-    // FUTURE:
-    //Need to implement .env file,
-    //Need to switch this over to being Node.JS backend to bypass CORS issues, and then use the API key from the .env file
+    if (response.status === 404) return null;
 
-    const AUTODEV_API_KEY = "";
-    if (vehicle.estimatedValue === null){
-        const baseUrl = 'https://api.auto.dev/listings'; // 1.3.1
-        const queryParams = `?apiKey=${AUTODEV_API_KEY}&vehicle.year=${vehicle.year}&vehicle.make=${encodeURIComponent(vehicle.make.toLowerCase())}&vehicle.model=${encodeURIComponent(vehicle.model.toLowerCase())}`;
-        const targetUrl = corsProxy + baseUrl + queryParams;
-        const settings = {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            },
-            //mode: 'no-cors', // workaround rn
-        };
-        const response = await fetch(targetUrl, settings);
-        
-        if (!response.ok) {
-            throw new Error(`Auto.dev API HTTP Error! Status: ${response.status}`);
-        }
-        const result = await response.json();
-        console.log("Auto.dev API response:", result);
-        if (!result || !result.data || result.data.length === 0) {
-            return null;
-        }
-        let totalRealPrices = 0;
-        let validCount = 0;
-
-        for (let i = 0; i < result.data.length; i++) {
-            const entry = result.data[i];
-            
-            // Only aggregate records that contain a valid retail pricing index higher than zero
-            if (entry.retailListing && entry.retailListing.price > 0) {
-                totalRealPrices += entry.retailListing.price;
-                validCount++;
-            }
-        }
-
-        if (validCount > 0) {
-            const averageMarketValue = Math.round(totalRealPrices / validCount);
-        } else {
-            return null;
-        }
+    if (!response.ok) {
+        throw new Error("Value request failed: " + response.status);
     }
 
-    return {
-        value: vehicle.estimatedValue,
-        low: Math.round(vehicle.estimatedValue * 0.92),
-        high: Math.round(vehicle.estimatedValue * 1.08),
-        updated: "Sample data",
-        source: "Placeholder"
-    };
+    return response.json();
 }
 
 function formatMoney(n) {
@@ -516,7 +474,7 @@ async function loadValueCard(vehicle) {
 
     try {
 
-        const data = await getVehicleValue(vehicle);
+        const data = await getVehicleValue(vehicle.id);
 
         if (!data) {
 

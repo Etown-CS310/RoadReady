@@ -39,9 +39,28 @@ CREATE TABLE IF NOT EXISTS vehicles (
   body_type         VARCHAR(40),
   current_mileage   INT NOT NULL DEFAULT 0,
   image_url         VARCHAR(500),
+  estimated_value   DECIMAL(10,2) NULL,
   created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
+-- Existing databases: CREATE TABLE IF NOT EXISTS will not add new columns,
+-- so add estimated_value here if it is missing. Safe to re-run.
+SET @estimated_value_exists = (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'vehicles'
+    AND COLUMN_NAME = 'estimated_value'
+);
+SET @add_estimated_value = IF(
+  @estimated_value_exists = 0,
+  'ALTER TABLE vehicles ADD COLUMN estimated_value DECIMAL(10,2) NULL AFTER image_url',
+  'SELECT 1'
+);
+PREPARE stmt FROM @add_estimated_value;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- ------------------------------------------------------------
 -- USER / VEHICLE ACCESS

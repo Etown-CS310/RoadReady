@@ -87,6 +87,129 @@ router.get("/", requireLogin, async (req, res) => {
 
 
 // --------------------------------------------------
+// VEHICLE VALUE (database first, Auto.dev fallback)
+// --------------------------------------------------
+
+const AUTODEV_API_KEY = process.env.AUTODEV_API_KEY;
+
+async function getAutoDevAverage(vehicle) {
+
+    if (!AUTODEV_API_KEY) {
+        throw new Error("Missing AUTODEV_API_KEY environment variable");
+    }
+
+    const params = new URLSearchParams({
+        apiKey: AUTODEV_API_KEY,
+        "vehicle.year": String(vehicle.model_year),
+        "vehicle.make": String(vehicle.make).toLowerCase(),
+        "vehicle.model": String(vehicle.model).toLowerCase()
+    });
+
+    const response = await fetch(
+        `https://api.auto.dev/listings?${params}`,
+        { headers: { Accept: "application/json" } }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Auto.dev API HTTP Error! Status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result || !Array.isArray(result.data) || result.data.length === 0) {
+        return null;
+    }
+
+    const prices = result.data
+        .map(entry => entry.retailListing && entry.retailListing.price)
+        .filter(price => typeof price === "number" && price > 0);
+
+    if (prices.length === 0) return null;
+
+    return Math.round(
+        prices.reduce((sum, price) => sum + price, 0) / prices.length
+    );
+}
+
+router.get("/:id/value", requireLogin, async (req, res) => {
+
+    try {
+
+        const userId = req.session.user.id;
+
+        const [rows] = await db.query(
+            `
+            SELECT
+                v.id,
+                v.model_year,
+                v.make,
+                v.model,
+                v.estimated_value
+            FROM vehicles v
+            INNER JOIN user_vehicles uv
+                ON uv.vehicle_id = v.id
+            WHERE v.id = ?
+              AND uv.user_id = ?
+            LIMIT 1
+            `,
+            [req.params.id, userId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found."
+            });
+        }
+
+        const vehicle = rows[0];
+
+        let value = vehicle.estimated_value
+            ? Number(vehicle.estimated_value)
+            : null;
+        let source = "Database";
+
+        if (value === null) {
+            value = await getAutoDevAverage(vehicle);
+            source = "Auto.dev";
+
+            if (value !== null) {
+                await db.query(
+                    "UPDATE vehicles SET estimated_value = ? WHERE id = ?",
+                    [value, vehicle.id]
+                );
+            }
+        }
+
+        if (value === null) {
+            return res.status(404).json({
+                success: false,
+                message: "No valuation data found."
+            });
+        }
+
+        res.json({
+            success: true,
+            value,
+            low: Math.round(value * 0.92),
+            high: Math.round(value * 1.08),
+            updated: new Date().toISOString().slice(0, 10),
+            source
+        });
+
+    } catch (error) {
+
+        console.error("Vehicle value error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Could not load vehicle value."
+        });
+    }
+});
+
+
+// --------------------------------------------------
 // IMPORT VEHICLES FROM CSV
 // --------------------------------------------------
 
