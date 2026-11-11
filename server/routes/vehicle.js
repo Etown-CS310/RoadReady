@@ -367,7 +367,7 @@ router.post("/import", requireLogin, async (req, res) => {
         // Save all inserts together.
         await connection.commit();
 
-        res.json({
+        res.status(201).json({
             success: true,
             message: `${preparedVehicles.length} vehicles imported successfully.`,
             imported: preparedVehicles.length

@@ -25,6 +25,23 @@ const { requireLogin } = require("../middleware/auth");
 
 const router = express.Router();
 
+const VALID_STATUSES = ["good", "soon", "overdue", "completed"];
+
+// True for a real calendar date written as YYYY-MM-DD.
+function isValidDate(value) {
+
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return false;
+    }
+
+    const parsed = new Date(value + "T00:00:00Z");
+
+    return (
+        !Number.isNaN(parsed.getTime()) &&
+        parsed.toISOString().slice(0, 10) === value
+    );
+}
+
 
 // GET /api/maintenance
 router.get("/", requireLogin, async (req, res) => {
@@ -286,11 +303,7 @@ router.post("/:vehicleId", requireLogin, async (req, res) => {
             parsedDueDate =
                 dueDate;
 
-            if (
-                !/^\d{4}-\d{2}-\d{2}$/.test(
-                    parsedDueDate
-                )
-            ) {
+            if (!isValidDate(parsedDueDate)) {
                 return res.status(400).json({
                     success: false,
                     message:
@@ -475,6 +488,243 @@ router.post("/:vehicleId", requireLogin, async (req, res) => {
             success: false,
             message:
                 "Failed to add maintenance."
+        });
+    }
+});
+
+/*
+ * PATCH /api/maintenance/:id
+ * Body (all optional, at least one required):
+ *   status      "good" | "soon" | "overdue" | "completed"
+ *   dueMileage  non-negative integer or null
+ *   dueDate     "YYYY-MM-DD" or null
+ *   notes       string (max 255) or null
+ *
+ * Marking an item "completed" also logs it in maintenance_history
+ * (today's date, the vehicle's current mileage) in one transaction.
+ */
+router.patch("/:id", requireLogin, async (req, res) => {
+
+    const userId = req.session.user.id;
+    const scheduleId = Number(req.params.id);
+    const body = req.body || {};
+
+    if (!Number.isInteger(scheduleId) || scheduleId <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid maintenance ID."
+        });
+    }
+
+    const updates = {};
+
+    if (body.status !== undefined) {
+        if (!VALID_STATUSES.includes(body.status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Status must be one of: " + VALID_STATUSES.join(", ") + "."
+            });
+        }
+        updates.status = body.status;
+    }
+
+    if (body.dueMileage !== undefined) {
+        if (body.dueMileage === null || body.dueMileage === "") {
+            updates.due_mileage = null;
+        } else {
+            const mileage = Number(body.dueMileage);
+            if (!Number.isInteger(mileage) || mileage < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Due mileage must be a non-negative whole number."
+                });
+            }
+            updates.due_mileage = mileage;
+        }
+    }
+
+    if (body.dueDate !== undefined) {
+        if (body.dueDate === null || body.dueDate === "") {
+            updates.due_date = null;
+        } else if (!isValidDate(body.dueDate)) {
+            return res.status(400).json({
+                success: false,
+                message: "Due date must be a valid date (YYYY-MM-DD)."
+            });
+        } else {
+            updates.due_date = body.dueDate;
+        }
+    }
+
+    if (body.notes !== undefined) {
+        if (body.notes === null || body.notes === "") {
+            updates.notes = null;
+        } else {
+            const notes = String(body.notes).trim();
+            if (notes.length > 255) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Notes must be 255 characters or fewer."
+                });
+            }
+            updates.notes = notes || null;
+        }
+    }
+
+    if (Object.keys(updates).length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Provide at least one field to update."
+        });
+    }
+
+    let connection;
+
+    try {
+
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // The item must belong to one of this user's vehicles.
+        const [rows] = await connection.query(
+            `
+            SELECT
+                s.id,
+                s.vehicle_id,
+                s.maintenance_type_id,
+                v.current_mileage
+            FROM vehicle_maintenance_schedule s
+            INNER JOIN vehicles v ON v.id = s.vehicle_id
+            INNER JOIN user_vehicles uv ON uv.vehicle_id = s.vehicle_id
+            WHERE s.id = ?
+              AND uv.user_id = ?
+            LIMIT 1
+            `,
+            [scheduleId, userId]
+        );
+
+        if (rows.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({
+                success: false,
+                message: "Maintenance item not found."
+            });
+        }
+
+        const item = rows[0];
+
+        const columns = Object.keys(updates);
+
+        await connection.query(
+            `UPDATE vehicle_maintenance_schedule SET ${
+                columns.map(column => column + " = ?").join(", ")
+            } WHERE id = ?`,
+            [...columns.map(column => updates[column]), scheduleId]
+        );
+
+        if (updates.status === "completed") {
+            await connection.query(
+                `
+                INSERT INTO maintenance_history
+                    (vehicle_id, maintenance_type_id, service_date, mileage_at_service)
+                VALUES (?, ?, CURDATE(), ?)
+                `,
+                [item.vehicle_id, item.maintenance_type_id, item.current_mileage]
+            );
+        }
+
+        await connection.commit();
+
+        const [updatedRows] = await db.query(
+            `
+            SELECT
+                s.id,
+                s.vehicle_id,
+                s.maintenance_type_id,
+                mt.name AS maintenance_name,
+                s.due_mileage,
+                s.due_date,
+                s.status,
+                s.notes
+            FROM vehicle_maintenance_schedule s
+            INNER JOIN maintenance_types mt ON mt.id = s.maintenance_type_id
+            WHERE s.id = ?
+            `,
+            [scheduleId]
+        );
+
+        res.json({
+            success: true,
+            maintenance: updatedRows[0]
+        });
+
+    } catch (error) {
+
+        if (connection) {
+            try { await connection.rollback(); } catch (e) { /* ignore */ }
+        }
+
+        console.error("Update maintenance error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to update maintenance."
+        });
+
+    } finally {
+
+        if (connection) connection.release();
+    }
+});
+
+
+/*
+ * DELETE /api/maintenance/:id
+ */
+router.delete("/:id", requireLogin, async (req, res) => {
+
+    const userId = req.session.user.id;
+    const scheduleId = Number(req.params.id);
+
+    if (!Number.isInteger(scheduleId) || scheduleId <= 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid maintenance ID."
+        });
+    }
+
+    try {
+
+        const [result] = await db.query(
+            `
+            DELETE s
+            FROM vehicle_maintenance_schedule s
+            INNER JOIN user_vehicles uv ON uv.vehicle_id = s.vehicle_id
+            WHERE s.id = ?
+              AND uv.user_id = ?
+            `,
+            [scheduleId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Maintenance item not found."
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Maintenance item deleted."
+        });
+
+    } catch (error) {
+
+        console.error("Delete maintenance error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to delete maintenance."
         });
     }
 });

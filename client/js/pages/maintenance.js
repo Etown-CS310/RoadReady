@@ -110,6 +110,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         let data = await response.json();
 
+        window.addEventListener(
+            "maintenance-refreshed",
+            function (event) {
+                data = event.detail;
+            }
+        );
+
         if (!data.success) {
             throw new Error(
                 data.message ||
@@ -647,6 +654,69 @@ function renderVehicleMaintenance(
                 );
             }
 
+            // Actions (PATCH / DELETE through the API)
+
+            const actions =
+                document.createElement("div");
+
+            actions.className =
+                "reminder-actions";
+
+            const completeButton =
+                document.createElement("button");
+
+            completeButton.type = "button";
+            completeButton.className =
+                "btn btn-sm btn-outline-primary";
+            completeButton.textContent =
+                "Mark Complete";
+
+            completeButton.addEventListener(
+                "click",
+                function () {
+                    changeScheduleItem(
+                        item.id,
+                        "PATCH",
+                        { status: "completed" },
+                        completeButton
+                    );
+                }
+            );
+
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.type = "button";
+            deleteButton.className =
+                "btn btn-sm btn-outline-danger";
+            deleteButton.textContent =
+                "Delete";
+
+            deleteButton.addEventListener(
+                "click",
+                function () {
+
+                    if (
+                        !window.confirm(
+                            "Delete this scheduled item?"
+                        )
+                    ) {
+                        return;
+                    }
+
+                    changeScheduleItem(
+                        item.id,
+                        "DELETE",
+                        null,
+                        deleteButton
+                    );
+                }
+            );
+
+            actions.appendChild(completeButton);
+            actions.appendChild(deleteButton);
+            itemElement.appendChild(actions);
+
             maintenanceList.appendChild(
                 itemElement
             );
@@ -745,6 +815,77 @@ function renderVehicleMaintenance(
 }
 
 // ==========================================================
+// UPDATE / DELETE A SCHEDULE ITEM, THEN REFRESH THE PAGE
+// ==========================================================
+
+async function changeScheduleItem(id, method, body, button) {
+
+    button.disabled = true;
+
+    try {
+
+        const options = {
+            method: method,
+            credentials: "include"
+        };
+
+        if (body) {
+            options.headers = {
+                "Content-Type": "application/json"
+            };
+            options.body = JSON.stringify(body);
+        }
+
+        const response =
+            await fetch(`/api/maintenance/${id}`, options);
+
+        const result =
+            await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message ||
+                "Could not update maintenance."
+            );
+        }
+
+        // Reload from the database so the lists reflect the change.
+        const refresh =
+            await fetch("/api/maintenance", {
+                credentials: "include"
+            });
+
+        const data =
+            await refresh.json();
+
+        if (!refresh.ok || !data.success) {
+            throw new Error(
+                "Saved, but the page could not refresh."
+            );
+        }
+
+        const selector =
+            document.getElementById("maintenanceVehicle");
+
+        renderVehicleMaintenance(
+            Number(selector.value),
+            data
+        );
+
+        // Keep the add-form handler's copy of the data current.
+        window.dispatchEvent(
+            new CustomEvent("maintenance-refreshed", { detail: data })
+        );
+
+    } catch (error) {
+
+        console.error("Maintenance update error:", error);
+        alert(error.message);
+        button.disabled = false;
+    }
+}
+
+// ==========================================================
 // EMPTY STATES
 // ==========================================================
 
@@ -791,8 +932,11 @@ function formatDate(dateValue) {
         return "";
     }
 
+    // "YYYY-MM-DD" strings are parsed as local dates (no UTC shift).
     const date =
-        new Date(dateValue);
+        new Date(
+            String(dateValue).slice(0, 10) + "T00:00:00"
+        );
 
     if (
         Number.isNaN(

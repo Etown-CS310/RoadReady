@@ -20,6 +20,14 @@
  * Dashboard data is provided by /server/routes/dashboard.js.
  */
 
+// Format a "YYYY-MM-DD" string as a local date (avoids UTC off-by-one-day).
+function localDate(value) {
+    const date = new Date(String(value).slice(0, 10) + "T00:00:00");
+    return Number.isNaN(date.getTime())
+        ? String(value)
+        : date.toLocaleDateString();
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     try {
@@ -235,21 +243,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                     element.className =
                         "maintenance-item";
 
-                    element.innerHTML = `
-                        <strong>
-                            ${item.maintenance_name}
-                        </strong>
+                    const title = document.createElement("strong");
+                    title.textContent = item.maintenance_name;
 
-                        <span>
-                            ${
-                                item.due_mileage
-                                    ? `Due at ${Number(item.due_mileage).toLocaleString()} miles`
-                                    : item.due_date
-                                        ? `Due ${item.due_date}`
-                                        : "Scheduled maintenance"
-                            }
-                        </span>
-                    `;
+                    const detail = document.createElement("span");
+                    detail.textContent =
+                        item.due_mileage
+                            ? `Due at ${Number(item.due_mileage).toLocaleString()} miles`
+                            : item.due_date
+                                ? `Due ${localDate(item.due_date)}`
+                                : "Scheduled maintenance";
+
+                    element.appendChild(title);
+                    element.appendChild(detail);
 
                     maintenanceList.appendChild(element);
                 });
@@ -293,24 +299,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                     element.className =
                         "maintenance-item";
 
-                    const date =
-                        new Date(item.service_date)
-                            .toLocaleDateString();
+                    const title = document.createElement("strong");
+                    title.textContent = item.maintenance_name;
 
-                    element.innerHTML = `
-                        <strong>
-                            ${item.maintenance_name}
-                        </strong>
+                    const detail = document.createElement("span");
+                    detail.textContent =
+                        localDate(item.service_date) +
+                        (
+                            item.mileage_at_service
+                                ? ` • ${Number(item.mileage_at_service).toLocaleString()} miles`
+                                : ""
+                        );
 
-                        <span>
-                            ${date}
-                            ${
-                                item.mileage_at_service
-                                    ? ` • ${Number(item.mileage_at_service).toLocaleString()} miles`
-                                    : ""
-                            }
-                        </span>
-                    `;
+                    element.appendChild(title);
+                    element.appendChild(detail);
 
                     history.appendChild(element);
                 });

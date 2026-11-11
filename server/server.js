@@ -147,7 +147,8 @@ app.get("/web/:page.html", requirePageLogin, (req, res, next) => {
         "dashboard.html",
         "maintenance.html",
         "vehicle.html",
-        "maintenance-guide.html"
+        "maintenance-guide.html",
+        "reminders.html"
     ];
 
     const requestedPage = req.params.page + ".html";
@@ -167,12 +168,46 @@ app.get("/web/:page.html", requirePageLogin, (req, res, next) => {
 });
 
 
-// Serve the rest of the frontend
-app.use(
-    express.static(
-        path.join(__dirname, "..")
-    )
-);
+// Serve ONLY the public frontend folders.
+// (Serving the project root would expose server/, package.json, and the SQL file.)
+const projectRoot = path.join(__dirname, "..");
+
+["client", "forms", "images"].forEach((folder) => {
+    app.use(
+        "/" + folder,
+        express.static(path.join(projectRoot, folder))
+    );
+});
+
+// JSON 404 for unknown API routes
+app.use("/api", (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "API endpoint not found."
+    });
+});
+
+
+// --------------------------------------------------
+// ERROR HANDLER (e.g. malformed JSON bodies)
+// --------------------------------------------------
+
+app.use((err, req, res, next) => {
+
+    if (err.type === "entity.parse.failed") {
+        return res.status(400).json({
+            success: false,
+            message: "Request body must be valid JSON."
+        });
+    }
+
+    console.error("Unhandled error:", err);
+
+    res.status(500).json({
+        success: false,
+        message: "Unexpected server error."
+    });
+});
 
 
 // --------------------------------------------------

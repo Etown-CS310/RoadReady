@@ -2,9 +2,10 @@
   "name": "roadready",
   "version": "1.0.0",
   "description": "RoadReady is a vehicle maintenance dashboard that helps users track their vehicles, upcoming maintenance, and service history.",
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,9 @@
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
     "express-session": "^1.19.0",
-    "mysql2": "^3.24.4",
+    "mysql2": "^3.24.4"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.14"
   }
 }
