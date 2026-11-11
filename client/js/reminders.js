@@ -1,498 +1,997 @@
+
 /*
- * RoadReady Reminders
- * Displays scheduled maintenance and lets users save custom reminders locally.
+ * Filename: /client/js/reminders.js
+ *
+ * This file controls the RoadReady Reminders page.
+ *
+ * Responsibilities:
+ * - Load the authenticated user's vehicles.
+ * - Load scheduled maintenance from the Maintenance API.
+ * - Display upcoming, overdue, and completed reminders.
+ * - Allow users to create custom reminders.
+ * - Allow users to mark reminders as completed or reopen them.
+ * - Allow users to delete custom reminders.
+ * - Remember custom and completed reminders using localStorage.
+ *
+ * This file does NOT:
+ * - Query MySQL directly.
+ * - Contain SQL queries.
+ * - Manage authentication directly.
+ *
+ * Database data is provided by /server/routes/maintenance.js.
  */
 
-document.addEventListener("DOMContentLoaded", function () {
-    const vehicleSelect = document.getElementById("reminderVehicle");
-    const reminderList = document.getElementById("reminderList");
-    const reminderForm = document.getElementById("reminderForm");
-    const addReminderPanel = document.getElementById("addReminderPanel");
-    const filterButtons = document.querySelectorAll(".reminder-filter");
+document.addEventListener("DOMContentLoaded", async function () {
 
-    const customStorageKey = "roadReadyCustomReminders";
-    const completedStorageKey = "roadReadyCompletedReminders";
+    // ==========================================================
+    // ELEMENTS
+    // ==========================================================
 
+    const vehicleSelect =
+        document.getElementById("reminderVehicle");
+
+    const reminderList =
+        document.getElementById("reminderList");
+
+    const reminderForm =
+        document.getElementById("reminderForm");
+
+    const addReminderPanel =
+        document.getElementById("addReminderPanel");
+
+    const filterButtons =
+        document.querySelectorAll(".reminder-filter");
+
+    const showAddReminder =
+        document.getElementById("showAddReminder");
+
+    const closeAddReminder =
+        document.getElementById("closeAddReminder");
+
+    const cancelAddReminder =
+        document.getElementById("cancelAddReminder");
+
+    const overdueCount =
+        document.getElementById("overdueCount");
+
+    const soonCount =
+        document.getElementById("soonCount");
+
+    const upcomingCount =
+        document.getElementById("upcomingCount");
+
+    const customStorageKey =
+        "roadReadyCustomReminders";
+
+    const completedStorageKey =
+        "roadReadyCompletedReminders";
+
+    const selectedVehicleStorageKey =
+        "roadReadySelectedReminderVehicle";
+
+    let vehicles = [];
+    let maintenance = [];
     let activeFilter = "all";
 
-    // Read saved information from the browser.
+    // ==========================================================
+    // LOCAL STORAGE
+    // ==========================================================
+
     function readStorage(key, fallback) {
+
         try {
-            const saved = localStorage.getItem(key);
-            return saved ? JSON.parse(saved) : fallback;
+
+            const stored =
+                localStorage.getItem(key);
+
+            return stored
+                ? JSON.parse(stored)
+                : fallback;
+
         } catch (error) {
+
+            console.error(
+                `Could not read ${key}:`,
+                error
+            );
+
             return fallback;
         }
     }
 
-    // Save information in the browser.
     function saveStorage(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
+
+        try {
+
+            localStorage.setItem(
+                key,
+                JSON.stringify(value)
+            );
+
+        } catch (error) {
+
+            console.error(
+                `Could not save ${key}:`,
+                error
+            );
+        }
     }
 
     function getCustomReminders() {
-        return readStorage(customStorageKey, []);
+
+        const reminders =
+            readStorage(customStorageKey, []);
+
+        return Array.isArray(reminders)
+            ? reminders
+            : [];
     }
 
     function getCompletedReminders() {
-        return readStorage(completedStorageKey, []);
+
+        const completed =
+            readStorage(completedStorageKey, []);
+
+        return Array.isArray(completed)
+            ? completed.map(String)
+            : [];
     }
 
-    // Load vehicles from the existing RoadReady data.
-    roadReadyData.vehicles.forEach(function (vehicle) {
-        const option = document.createElement("option");
+    // ==========================================================
+    // LOAD DATABASE DATA
+    // ==========================================================
 
-        option.value = vehicle.id;
-        option.textContent =
-            vehicle.year + " " + vehicle.make + " " + vehicle.model;
+    async function loadReminderData() {
 
-        vehicleSelect.appendChild(option);
-    });
-
-    // Restore the previously selected vehicle.
-    const savedVehicle = localStorage.getItem(
-        "roadReadySelectedReminderVehicle"
-    );
-
-    if (
-        savedVehicle &&
-        roadReadyData.vehicles.some(function (vehicle) {
-            return String(vehicle.id) === savedVehicle;
-        })
-    ) {
-        vehicleSelect.value = savedVehicle;
-    }
-
-    // Get maintenance and custom reminders for the selected vehicle.
-    function getVehicleReminders() {
-        const vehicleId = Number(vehicleSelect.value);
-        const completed = getCompletedReminders();
-
-        const scheduled = roadReadyData.maintenance
-            .filter(function (item) {
-                return Number(item.vehicleId) === vehicleId;
-            })
-            .map(function (item) {
-                return {
-                    id: "maintenance-" + item.id,
-                    vehicleId: vehicleId,
-                    name: item.name || item.type || "Maintenance",
-                    detail: item.detail || "",
-                    dueDate: item.dueDate || "",
-                    dueMileage: item.dueMileage,
-                    notes: item.notes || "",
-                    status: item.status || "good",
-                    builtIn: true
-                };
-            });
-
-        const custom = getCustomReminders()
-            .filter(function (item) {
-                return Number(item.vehicleId) === vehicleId;
-            })
-            .map(function (item) {
-                const reminder = Object.assign({}, item);
-
-                reminder.status = getStatus(reminder);
-                reminder.builtIn = false;
-
-                return reminder;
-            });
-
-        return scheduled.concat(custom).map(function (item) {
-            item.isCompleted = completed.includes(item.id);
-
-            if (item.isCompleted) {
-                item.status = "completed";
+        const response = await fetch(
+            "/api/maintenance",
+            {
+                credentials: "include"
             }
+        );
 
-            return item;
-        });
-    }
+        if (!response.ok) {
 
-    // Determine whether a reminder is overdue, due soon, or upcoming.
-    function getStatus(item) {
-        const vehicle = roadReadyData.vehicles.find(function (entry) {
-            return Number(entry.id) === Number(item.vehicleId);
-        });
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (item.dueDate) {
-            const dueDate = new Date(item.dueDate + "T00:00:00");
-
-            if (!isNaN(dueDate.getTime()) && dueDate < today) {
-                return "overdue";
-            }
-
-            if (!isNaN(dueDate.getTime())) {
-                const daysLeft = Math.ceil(
-                    (dueDate - today) / 86400000
+            if (response.status === 401) {
+                throw new Error(
+                    "Please log in to view your reminders."
                 );
-
-                if (daysLeft <= 30) {
-                    return "soon";
-                }
-            }
-        }
-
-        if (
-            item.dueMileage !== "" &&
-            item.dueMileage !== null &&
-            item.dueMileage !== undefined &&
-            vehicle
-        ) {
-            const milesLeft =
-                Number(item.dueMileage) - Number(vehicle.mileage);
-
-            if (milesLeft < 0) {
-                return "overdue";
             }
 
-            if (milesLeft <= 500) {
-                return "soon";
-            }
-
-            return "good";
-        }
-
-        return item.status || "good";
-    }
-
-    function statusLabel(status) {
-        const labels = {
-            overdue: "OVERDUE",
-            soon: "DUE SOON",
-            good: "UPCOMING",
-            completed: "COMPLETED"
-        };
-
-        return labels[status] || "UPCOMING";
-    }
-
-    // Build the reminder's date, mileage, and notes text.
-    function reminderDetail(item) {
-        const parts = [];
-
-        if (
-            item.dueMileage !== "" &&
-            item.dueMileage !== null &&
-            item.dueMileage !== undefined
-        ) {
-            parts.push(
-                "Due at " +
-                Number(item.dueMileage).toLocaleString() +
-                " miles"
+            throw new Error(
+                "Could not load maintenance data."
             );
         }
 
-        if (item.dueDate) {
-            const date = new Date(item.dueDate + "T00:00:00");
+        const data =
+            await response.json();
 
-            parts.push("Due " + date.toLocaleDateString());
+        if (!data.success) {
+            throw new Error(
+                data.message ||
+                "Could not load maintenance data."
+            );
         }
 
-        if (item.detail) {
-            parts.push(item.detail);
-        }
+        vehicles =
+            data.vehicles || [];
 
-        if (item.notes) {
-            parts.push(item.notes);
-        }
-
-        return parts.join(" · ") || "No due date or mileage added";
+        maintenance =
+            data.maintenance || [];
     }
 
-    // Create a button and connect its action.
-    function makeButton(label, className, action, reminderId) {
-        const button = document.createElement("button");
+    // ==========================================================
+    // VEHICLE SELECTOR
+    // ==========================================================
 
-        button.type = "button";
-        button.className = className;
-        button.textContent = label;
+    function getVehicleName(vehicle) {
 
-        button.addEventListener("click", function () {
-            action(reminderId);
+        if (!vehicle) {
+            return "Unknown vehicle";
+        }
+
+        const fullName =
+            `${vehicle.model_year || ""} ${vehicle.make || ""} ${vehicle.model || ""}`
+                .trim();
+
+        return vehicle.nickname
+            ? `${vehicle.nickname} — ${fullName}`
+            : fullName || "Vehicle";
+    }
+
+    function populateVehicleSelector() {
+
+        if (!vehicleSelect) {
+            return;
+        }
+
+        vehicleSelect.replaceChildren();
+
+        if (vehicles.length === 0) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = "";
+            option.textContent = "No vehicles found";
+            option.disabled = true;
+            option.selected = true;
+
+            vehicleSelect.appendChild(option);
+
+            return;
+        }
+
+        const savedVehicleId =
+            localStorage.getItem(
+                selectedVehicleStorageKey
+            );
+
+        let selectedVehicle =
+            vehicles.find(function (vehicle) {
+                return String(vehicle.id) ===
+                    String(savedVehicleId);
+            });
+
+        if (!selectedVehicle) {
+
+            const maintenancePageVehicleId =
+                localStorage.getItem(
+                    "selectedVehicleId"
+                );
+
+            selectedVehicle =
+                vehicles.find(function (vehicle) {
+                    return String(vehicle.id) ===
+                        String(maintenancePageVehicleId);
+                });
+        }
+
+        if (!selectedVehicle) {
+            selectedVehicle = vehicles[0];
+        }
+
+        vehicles.forEach(function (vehicle) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = vehicle.id;
+            option.textContent =
+                getVehicleName(vehicle);
+
+            option.selected =
+                Number(vehicle.id) ===
+                Number(selectedVehicle.id);
+
+            vehicleSelect.appendChild(option);
         });
 
-        return button;
+        localStorage.setItem(
+            selectedVehicleStorageKey,
+            String(selectedVehicle.id)
+        );
     }
 
-    // Display the reminders and update the summary cards.
+    function getSelectedVehicleId() {
+
+        return vehicleSelect
+            ? Number(vehicleSelect.value)
+            : 0;
+    }
+
+    // ==========================================================
+    // REMINDER DATA
+    // ==========================================================
+
+    function getAllReminders() {
+
+        const completed =
+            getCompletedReminders();
+
+        const scheduledReminders =
+            maintenance.map(function (item) {
+
+                return {
+                    id: `maintenance-${item.id}`,
+                    sourceId: item.id,
+                    source: "scheduled",
+                    vehicleId: Number(item.vehicle_id),
+                    name: item.maintenance_name ||
+                        "Scheduled maintenance",
+                    detail: "",
+                    dueDate: item.due_date || "",
+                    dueMileage: item.due_mileage,
+                    notes: item.notes || "",
+                    status: item.status || "good",
+                    completed: completed.includes(
+                        `maintenance-${item.id}`
+                    )
+                };
+            });
+
+        const customReminders =
+            getCustomReminders().map(function (item) {
+
+                return {
+                    ...item,
+                    source: "custom",
+                    vehicleId: Number(item.vehicleId),
+                    completed: completed.includes(
+                        String(item.id)
+                    )
+                };
+            });
+
+        return [
+            ...scheduledReminders,
+            ...customReminders
+        ];
+    }
+
+    function getVehicle(vehicleId) {
+
+        return vehicles.find(function (vehicle) {
+            return Number(vehicle.id) ===
+                Number(vehicleId);
+        });
+    }
+
+    // ==========================================================
+    // REMINDER STATUS
+    // ==========================================================
+
+    function getStatus(reminder) {
+
+        if (reminder.completed) {
+            return "completed";
+        }
+
+        const vehicle =
+            getVehicle(reminder.vehicleId);
+
+        const currentMileage =
+            vehicle
+                ? Number(vehicle.current_mileage || 0)
+                : 0;
+
+        const dueMileage =
+            reminder.dueMileage !== null &&
+            reminder.dueMileage !== undefined &&
+            reminder.dueMileage !== ""
+                ? Number(reminder.dueMileage)
+                : null;
+
+        const mileageOverdue =
+            dueMileage !== null &&
+            currentMileage >= dueMileage;
+
+        let daysUntilDue = null;
+
+        if (reminder.dueDate) {
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const dueDate =
+                new Date(`${reminder.dueDate}T00:00:00`);
+
+            if (!Number.isNaN(dueDate.getTime())) {
+
+                daysUntilDue = Math.ceil(
+                    (dueDate.getTime() - today.getTime()) /
+                    (1000 * 60 * 60 * 24)
+                );
+            }
+        }
+
+        const dateOverdue =
+            daysUntilDue !== null &&
+            daysUntilDue < 0;
+
+        if (mileageOverdue || dateOverdue) {
+            return "overdue";
+        }
+
+        const dateSoon =
+            daysUntilDue !== null &&
+            daysUntilDue <= 30;
+
+        const mileageSoon =
+            dueMileage !== null &&
+            currentMileage > 0 &&
+            dueMileage - currentMileage <= 500;
+
+        if (dateSoon || mileageSoon) {
+            return "soon";
+        }
+
+        return "upcoming";
+    }
+
+    // ==========================================================
+    // FORMATTING
+    // ==========================================================
+
+    function formatDate(dateValue) {
+
+        if (!dateValue) {
+            return "No due date";
+        }
+
+        const date =
+            new Date(`${dateValue}T00:00:00`);
+
+        if (Number.isNaN(date.getTime())) {
+            return String(dateValue);
+        }
+
+        return date.toLocaleDateString();
+    }
+
+    function getDueDescription(reminder) {
+
+        const descriptions = [];
+
+        if (reminder.dueDate) {
+            descriptions.push(
+                `Due ${formatDate(reminder.dueDate)}`
+            );
+        }
+
+        if (
+            reminder.dueMileage !== null &&
+            reminder.dueMileage !== undefined &&
+            reminder.dueMileage !== ""
+        ) {
+            descriptions.push(
+                `At ${Number(reminder.dueMileage).toLocaleString()} miles`
+            );
+        }
+
+        return descriptions.length > 0
+            ? descriptions.join(" • ")
+            : "No due date or mileage set";
+    }
+
+    // ==========================================================
+    // REMINDER CARD
+    // ==========================================================
+
+    function createReminderCard(reminder) {
+
+        const status =
+            getStatus(reminder);
+
+        const vehicle =
+            getVehicle(reminder.vehicleId);
+
+        const card =
+            document.createElement("article");
+
+        card.className =
+            `reminder-card ${status}`;
+
+        const content =
+            document.createElement("div");
+
+        content.className =
+            "reminder-card-content";
+
+        const title =
+            document.createElement("h3");
+
+        title.textContent =
+            reminder.name || "Reminder";
+
+        const vehicleText =
+            document.createElement("p");
+
+        vehicleText.className =
+            "reminder-vehicle";
+
+        vehicleText.textContent =
+            getVehicleName(vehicle);
+
+        const dueText =
+            document.createElement("p");
+
+        dueText.className =
+            "reminder-due";
+
+        dueText.textContent =
+            getDueDescription(reminder);
+
+        const notes =
+            document.createElement("p");
+
+        notes.className =
+            "reminder-notes";
+
+        notes.textContent =
+            reminder.notes || "";
+
+        const statusText =
+            document.createElement("span");
+
+        statusText.className =
+            `reminder-status ${status}`;
+
+        const statusLabels = {
+            overdue: "Overdue",
+            soon: "Due Soon",
+            upcoming: "Upcoming",
+            completed: "Completed"
+        };
+
+        statusText.textContent =
+            statusLabels[status];
+
+        content.appendChild(title);
+        content.appendChild(vehicleText);
+        content.appendChild(dueText);
+
+        if (reminder.notes) {
+            content.appendChild(notes);
+        }
+
+        content.appendChild(statusText);
+
+        const actions =
+            document.createElement("div");
+
+        actions.className =
+            "reminder-actions";
+
+        const completeButton =
+            document.createElement("button");
+
+        completeButton.type = "button";
+
+        completeButton.className =
+            "btn btn-sm btn-outline-primary";
+
+        completeButton.textContent =
+            reminder.completed
+                ? "Reopen"
+                : "Mark Complete";
+
+        completeButton.addEventListener(
+            "click",
+            function () {
+                toggleCompleted(reminder);
+            }
+        );
+
+        actions.appendChild(completeButton);
+
+        if (reminder.source === "custom") {
+
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.type = "button";
+
+            deleteButton.className =
+                "btn btn-sm btn-outline-danger";
+
+            deleteButton.textContent =
+                "Delete";
+
+            deleteButton.addEventListener(
+                "click",
+                function () {
+                    deleteCustomReminder(reminder.id);
+                }
+            );
+
+            actions.appendChild(deleteButton);
+        }
+
+        card.appendChild(content);
+        card.appendChild(actions);
+
+        return card;
+    }
+
+    // ==========================================================
+    // COMPLETE / REOPEN REMINDERS
+    // ==========================================================
+
+    function toggleCompleted(reminder) {
+
+        let completed =
+            getCompletedReminders();
+
+        const reminderId =
+            String(reminder.id);
+
+        if (completed.includes(reminderId)) {
+
+            completed =
+                completed.filter(function (id) {
+                    return id !== reminderId;
+                });
+
+        } else {
+
+            completed.push(reminderId);
+        }
+
+        saveStorage(
+            completedStorageKey,
+            completed
+        );
+
+        renderReminders();
+    }
+
+    // ==========================================================
+    // DELETE CUSTOM REMINDER
+    // ==========================================================
+
+    function deleteCustomReminder(reminderId) {
+
+        const confirmed =
+            window.confirm(
+                "Are you sure you want to delete this reminder?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const reminders =
+            getCustomReminders().filter(
+                function (reminder) {
+                    return String(reminder.id) !==
+                        String(reminderId);
+                }
+            );
+
+        saveStorage(
+            customStorageKey,
+            reminders
+        );
+
+        const completed =
+            getCompletedReminders().filter(
+                function (id) {
+                    return id !== String(reminderId);
+                }
+            );
+
+        saveStorage(
+            completedStorageKey,
+            completed
+        );
+
+        renderReminders();
+    }
+
+    // ==========================================================
+    // COUNTERS
+    // ==========================================================
+
+    function updateCounters(reminders) {
+
+        const activeReminders =
+            reminders.filter(function (reminder) {
+                return !reminder.completed;
+            });
+
+        const counts = {
+            overdue: 0,
+            soon: 0,
+            upcoming: 0
+        };
+
+        activeReminders.forEach(function (reminder) {
+
+            const status =
+                getStatus(reminder);
+
+            if (counts[status] !== undefined) {
+                counts[status]++;
+            }
+        });
+
+        if (overdueCount) {
+            overdueCount.textContent =
+                counts.overdue;
+        }
+
+        if (soonCount) {
+            soonCount.textContent =
+                counts.soon;
+        }
+
+        if (upcomingCount) {
+            upcomingCount.textContent =
+                counts.upcoming;
+        }
+    }
+
+    // ==========================================================
+    // RENDER REMINDERS
+    // ==========================================================
+
     function renderReminders() {
-        const reminders = getVehicleReminders();
 
-        const active = reminders.filter(function (item) {
-            return !item.isCompleted;
-        });
-
-        document.getElementById("overdueCount").textContent =
-            active.filter(function (item) {
-                return item.status === "overdue";
-            }).length;
-
-        document.getElementById("soonCount").textContent =
-            active.filter(function (item) {
-                return item.status === "soon";
-            }).length;
-
-        document.getElementById("upcomingCount").textContent =
-            active.filter(function (item) {
-                return item.status === "good";
-            }).length;
-
-        const filtered = reminders.filter(function (item) {
-            return activeFilter === "all" ||
-                item.status === activeFilter;
-        });
+        if (!reminderList) {
+            return;
+        }
 
         reminderList.replaceChildren();
 
-        if (filtered.length === 0) {
-            const empty = document.createElement("div");
+        const selectedVehicleId =
+            getSelectedVehicleId();
 
-            empty.className = "empty-state-small";
+        let reminders =
+            getAllReminders().filter(
+                function (reminder) {
+                    return Number(reminder.vehicleId) ===
+                        selectedVehicleId;
+                }
+            );
 
-            empty.textContent = activeFilter === "completed"
-                ? "No completed reminders for this vehicle yet."
-                : "No reminders in this category. Add a reminder to get started.";
+        updateCounters(reminders);
+
+        if (activeFilter === "completed") {
+
+            reminders =
+                reminders.filter(function (reminder) {
+                    return reminder.completed;
+                });
+
+        } else if (activeFilter !== "all") {
+
+            reminders =
+                reminders.filter(function (reminder) {
+                    return getStatus(reminder) ===
+                        activeFilter;
+                });
+
+        }
+
+        reminders.sort(function (a, b) {
+
+            const order = {
+                overdue: 0,
+                soon: 1,
+                upcoming: 2,
+                completed: 3
+            };
+
+            return order[getStatus(a)] -
+                order[getStatus(b)];
+        });
+
+        if (reminders.length === 0) {
+
+            const empty =
+                document.createElement("div");
+
+            empty.className =
+                "empty-state-small";
+
+            empty.textContent =
+                "No reminders found.";
 
             reminderList.appendChild(empty);
 
             return;
         }
 
-        // Show the most urgent reminders first.
-        filtered.sort(function (a, b) {
-            const order = {
-                overdue: 0,
-                soon: 1,
-                good: 2,
-                completed: 3
-            };
+        reminders.forEach(function (reminder) {
 
-            return order[a.status] - order[b.status];
-        });
-
-        filtered.forEach(function (item) {
-            const card = document.createElement("article");
-            card.className = "reminder-item";
-
-            const info = document.createElement("div");
-            info.className = "reminder-item-info";
-
-            const title = document.createElement("h3");
-            title.textContent = item.name;
-
-            info.appendChild(title);
-
-            const detail = document.createElement("p");
-            detail.className = "reminder-detail";
-            detail.textContent = reminderDetail(item);
-
-            info.appendChild(detail);
-
-            const actions = document.createElement("div");
-            actions.className = "reminder-item-actions";
-
-            const badge = document.createElement("span");
-            badge.className = "status " + item.status;
-            badge.textContent = statusLabel(item.status);
-
-            actions.appendChild(badge);
-
-            if (item.status !== "completed") {
-                actions.appendChild(
-                    makeButton(
-                        "Mark Complete",
-                        "reminder-action",
-                        markCompleted,
-                        item.id
-                    )
-                );
-            } else {
-                actions.appendChild(
-                    makeButton(
-                        "Reopen",
-                        "reminder-action",
-                        reopenReminder,
-                        item.id
-                    )
-                );
-            }
-
-            // Only custom reminders can be deleted.
-            if (!item.builtIn) {
-                actions.appendChild(
-                    makeButton(
-                        "Delete",
-                        "reminder-delete",
-                        deleteReminder,
-                        item.id
-                    )
-                );
-            }
-
-            card.appendChild(info);
-            card.appendChild(actions);
-
-            reminderList.appendChild(card);
-        });
-    }
-
-    // Mark a reminder as completed.
-    function markCompleted(id) {
-        const completed = getCompletedReminders();
-
-        if (!completed.includes(id)) {
-            completed.push(id);
-        }
-
-        saveStorage(completedStorageKey, completed);
-
-        renderReminders();
-    }
-
-    // Reopen a completed reminder.
-    function reopenReminder(id) {
-        const completed = getCompletedReminders().filter(
-            function (item) {
-                return item !== id;
-            }
-        );
-
-        saveStorage(completedStorageKey, completed);
-
-        renderReminders();
-    }
-
-    // Delete a custom reminder.
-    function deleteReminder(id) {
-        const updated = getCustomReminders().filter(
-            function (item) {
-                return item.id !== id;
-            }
-        );
-
-        saveStorage(customStorageKey, updated);
-
-        const completed = getCompletedReminders().filter(
-            function (item) {
-                return item !== id;
-            }
-        );
-
-        saveStorage(completedStorageKey, completed);
-
-        renderReminders();
-    }
-
-    // Open and close the add-reminder form.
-    function openForm() {
-        addReminderPanel.hidden = false;
-
-        document.getElementById("reminderName").focus();
-    }
-
-    function closeForm() {
-        addReminderPanel.hidden = true;
-
-        reminderForm.reset();
-    }
-
-    document.getElementById("showAddReminder")
-        .addEventListener("click", openForm);
-
-    document.getElementById("closeAddReminder")
-        .addEventListener("click", closeForm);
-
-    document.getElementById("cancelAddReminder")
-        .addEventListener("click", closeForm);
-
-    // Save a new custom reminder.
-    reminderForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const name = document.getElementById("reminderName")
-            .value.trim();
-
-        const dueDate = document.getElementById("reminderDueDate")
-            .value;
-
-        const dueMileageInput = document.getElementById(
-            "reminderDueMileage"
-        ).value;
-
-        const notes = document.getElementById("reminderNotes")
-            .value.trim();
-
-        if (!name) {
-            return;
-        }
-
-        if (!dueDate && !dueMileageInput) {
-            alert("Please add a due date, due mileage, or both.");
-
-            return;
-        }
-
-        const reminders = getCustomReminders();
-
-        reminders.push({
-            id: "custom-" + Date.now(),
-            vehicleId: Number(vehicleSelect.value),
-            name: name,
-            dueDate: dueDate,
-            dueMileage: dueMileageInput === ""
-                ? ""
-                : Number(dueMileageInput),
-            notes: notes,
-            status: "good"
-        });
-
-        saveStorage(customStorageKey, reminders);
-
-        activeFilter = "all";
-
-        filterButtons.forEach(function (button) {
-            button.classList.toggle(
-                "active",
-                button.dataset.filter === "all"
+            reminderList.appendChild(
+                createReminderCard(reminder)
             );
         });
+    }
 
-        closeForm();
+    // ==========================================================
+    // FILTER BUTTONS
+    // ==========================================================
+
+    filterButtons.forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                filterButtons.forEach(function (item) {
+                    item.classList.remove("active");
+                });
+
+                button.classList.add("active");
+
+                activeFilter =
+                    button.dataset.filter || "all";
+
+                renderReminders();
+            }
+        );
+    });
+
+    // ==========================================================
+    // ADD REMINDER PANEL
+    // ==========================================================
+
+    function openReminderPanel() {
+
+        if (addReminderPanel) {
+            addReminderPanel.style.display = "block";
+        }
+    }
+
+    function closeReminderPanel() {
+
+        if (addReminderPanel) {
+            addReminderPanel.style.display = "none";
+        }
+
+        if (reminderForm) {
+            reminderForm.reset();
+        }
+    }
+
+    if (showAddReminder) {
+        showAddReminder.addEventListener(
+            "click",
+            openReminderPanel
+        );
+    }
+
+    if (closeAddReminder) {
+        closeAddReminder.addEventListener(
+            "click",
+            closeReminderPanel
+        );
+    }
+
+    if (cancelAddReminder) {
+        cancelAddReminder.addEventListener(
+            "click",
+            closeReminderPanel
+        );
+    }
+
+    // ==========================================================
+    // SAVE CUSTOM REMINDER
+    // ==========================================================
+
+    if (reminderForm) {
+
+        reminderForm.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+                const vehicleId =
+                    getSelectedVehicleId();
+
+                const name =
+                    document.getElementById(
+                        "reminderName"
+                    ).value.trim();
+
+                const dueDate =
+                    document.getElementById(
+                        "reminderDueDate"
+                    ).value;
+
+                const dueMileage =
+                    document.getElementById(
+                        "reminderDueMileage"
+                    ).value;
+
+                const notes =
+                    document.getElementById(
+                        "reminderNotes"
+                    ).value.trim();
+
+                if (!vehicleId) {
+                    alert("Please select a vehicle.");
+                    return;
+                }
+
+                if (!name) {
+                    alert("Please enter a reminder name.");
+                    return;
+                }
+
+                const reminders =
+                    getCustomReminders();
+
+                reminders.push({
+                    id: `custom-${Date.now()}`,
+                    vehicleId: vehicleId,
+                    name: name,
+                    dueDate: dueDate || "",
+                    dueMileage: dueMileage
+                        ? Number(dueMileage)
+                        : null,
+                    notes: notes,
+                    createdAt: new Date().toISOString()
+                });
+
+                saveStorage(
+                    customStorageKey,
+                    reminders
+                );
+
+                closeReminderPanel();
+                renderReminders();
+            }
+        );
+    }
+
+    // ==========================================================
+    // VEHICLE CHANGE
+    // ==========================================================
+
+    if (vehicleSelect) {
+
+        vehicleSelect.addEventListener(
+            "change",
+            function () {
+
+                localStorage.setItem(
+                    selectedVehicleStorageKey,
+                    String(this.value)
+                );
+
+                renderReminders();
+            }
+        );
+    }
+
+    // ==========================================================
+    // INITIALIZE PAGE
+    // ==========================================================
+
+    try {
+
+        await loadReminderData();
+
+        populateVehicleSelector();
+
+        if (vehicles.length === 0) {
+
+            reminderList.innerHTML = `
+                <div class="empty-state-small">
+                    Add a vehicle before creating reminders.
+                </div>
+            `;
+
+            if (showAddReminder) {
+                showAddReminder.disabled = true;
+            }
+
+            updateCounters([]);
+
+            return;
+        }
 
         renderReminders();
-    });
 
-    // Filter reminders by status.
-    filterButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-            activeFilter = button.dataset.filter;
+    } catch (error) {
 
-            filterButtons.forEach(function (filterButton) {
-                filterButton.classList.toggle(
-                    "active",
-                    filterButton === button
-                );
-            });
-
-            renderReminders();
-        });
-    });
-
-    // Save the selected vehicle.
-    vehicleSelect.addEventListener("change", function () {
-        localStorage.setItem(
-            "roadReadySelectedReminderVehicle",
-            vehicleSelect.value
+        console.error(
+            "Reminders loading error:",
+            error
         );
 
-        renderReminders();
-    });
+        if (reminderList) {
 
-    // Display reminders when the page opens.
-    renderReminders();
+            reminderList.innerHTML = `
+                <div class="empty-state-small">
+                    ${error.message}
+                </div>
+            `;
+        }
+    }
 });

@@ -1137,3 +1137,150 @@ body.dark-mode .reminder-help {
         flex-direction: column;
     }
 }
+
+
+/* =========================================
+   REMINDERS PAGE - LAYOUT AND COMPONENTS
+========================================= */
+
+.reminders-page {
+    width: calc(100% - 230px);
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.reminders-page > section {
+    width: 100%;
+    min-width: 0;
+}
+
+.reminders-page .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.reminders-page .card {
+    min-width: 0;
+}
+
+#reminderList {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.reminder-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid #edf0f2;
+    min-width: 0;
+}
+
+.reminder-card:last-child {
+    border-bottom: none;
+}
+
+.reminder-card-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.reminder-card-content h3 {
+    font-size: 16px;
+    margin-bottom: 7px;
+}
+
+.reminder-vehicle,
+.reminder-due,
+.reminder-notes {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.reminder-status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+.reminder-status.overdue {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.reminder-status.soon {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.reminder-status.upcoming {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.reminder-status.completed {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.reminder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.reminders-page .reminder-filter.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+/* Dark mode */
+
+body.dark-mode .reminder-card {
+    border-color: #454c60;
+}
+
+body.dark-mode .reminder-vehicle,
+body.dark-mode .reminder-due,
+body.dark-mode .reminder-notes {
+    color: #c0c6d4;
+}
+
+body.dark-mode .reminder-status.completed {
+    background: #3a4053;
+    color: #f1f3f9;
+}
+
+/* Responsive layout */
+
+@media (max-width: 900px) {
+    .reminders-page {
+        width: calc(100% - 180px);
+    }
+}
+
+@media (max-width: 600px) {
+    .reminders-page {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .reminder-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .reminder-actions {
+        justify-content: flex-start;
+    }
+}

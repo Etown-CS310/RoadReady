@@ -38,7 +38,8 @@ async function renderNavbar() {
             icon: "fa-solid fa-car"
         },
         {
-            href: "reminders.html",
+            href: "/web/reminders.html",
+            file: "reminders.html",
             label: "Reminders",
             icon: "fa-solid fa-bell"
         },
