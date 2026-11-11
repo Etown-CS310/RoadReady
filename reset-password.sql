@@ -1,11 +1,11 @@
 UPDATE users
-SET password_hash = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'
+SET password_hash = '$2a$12$s5wecf/WcTdBK3tPjP3DyuTGDapPrfILRgDz/mcs.SzJ4DTz7GVOq'
 WHERE id IN (1, 2, 3, 4, 5);
 
 -- OR
 
 UPDATE users
-SET password_hash = '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'
+SET password_hash = '$2a$12$s5wecf/WcTdBK3tPjP3DyuTGDapPrfILRgDz/mcs.SzJ4DTz7GVOq'
 WHERE email IN (
     'sam.rivera@example.com',
     'jamie.chen@example.com',
