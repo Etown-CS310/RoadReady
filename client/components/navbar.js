@@ -98,10 +98,20 @@ async function renderNavbar() {
 
             <div class="sidebar-bottom">
 
+
                 <div class="sidebar-user">
                     <i class="fa-solid fa-user nav-icon"></i>
                     ${userName}
                 </div>
+
+                <a
+                    href="/forms/profile.html"
+                    class="nav-item"
+                >
+                    <i class="fa-solid fa-id-card nav-icon"></i>
+                    My Profile
+                </a>
+
 
                 <a
                     href="/forms/logout.html"
