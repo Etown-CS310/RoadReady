@@ -90,16 +90,16 @@ router.get("/", requireLogin, async (req, res) => {
 // VEHICLE VALUE (database first, Auto.dev fallback)
 // --------------------------------------------------
 
-const AUTODEV_API_KEY = process.env.AUTODEV_API_KEY;
-
 async function getAutoDevAverage(vehicle) {
 
-    if (!AUTODEV_API_KEY) {
+    const apiKey = process.env.AUTODEV_API_KEY;
+
+    if (!apiKey) {
         throw new Error("Missing AUTODEV_API_KEY environment variable");
     }
 
     const params = new URLSearchParams({
-        apiKey: AUTODEV_API_KEY,
+        apiKey,
         "vehicle.year": String(vehicle.model_year),
         "vehicle.make": String(vehicle.make).toLowerCase(),
         "vehicle.model": String(vehicle.model).toLowerCase()
@@ -107,7 +107,10 @@ async function getAutoDevAverage(vehicle) {
 
     const response = await fetch(
         `https://api.auto.dev/listings?${params}`,
-        { headers: { Accept: "application/json" } }
+        {
+            headers: { Accept: "application/json" },
+            signal: AbortSignal.timeout(15000)
+        }
     );
 
     if (!response.ok) {

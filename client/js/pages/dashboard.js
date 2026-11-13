@@ -126,6 +126,57 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         // --------------------------------------------------
+        // VEHICLE VALUE
+        // --------------------------------------------------
+
+        const valueAmount =
+            document.querySelector("#value-card .value-amount");
+
+        const valueRange =
+            document.querySelector("#value-card .value-range");
+
+        if (valueAmount) {
+
+            // Not awaited, so a slow valuation never blocks the rest of
+            // the dashboard from rendering.
+            getVehicleValue(vehicle.id)
+                .then(valueData => {
+
+                    if (!valueData) {
+
+                        valueAmount.textContent = "Unavailable";
+
+                        if (valueRange) {
+                            valueRange.textContent =
+                                "No valuation data yet.";
+                        }
+
+                        return;
+                    }
+
+                    valueAmount.textContent =
+                        formatMoney(valueData.value);
+
+                    if (valueRange) {
+                        valueRange.textContent =
+                            `${formatMoney(valueData.low)} – ${formatMoney(valueData.high)} • ${valueData.source}`;
+                    }
+                })
+                .catch(valueError => {
+
+                    console.error("Vehicle value error:", valueError);
+
+                    valueAmount.textContent = "Unavailable";
+
+                    if (valueRange) {
+                        valueRange.textContent =
+                            "Couldn't load valuation.";
+                    }
+                });
+        }
+
+
+        // --------------------------------------------------
         // NEXT SERVICE
         // --------------------------------------------------
 
