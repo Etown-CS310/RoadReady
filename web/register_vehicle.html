@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Register a Vehicle</title>
+        <link rel="stylesheet" href="/client/css/styles.css">
+    </head>
+    <body>
+        <main>
+            <h1>Register a Vehicle</h1>
+            <p class="sub">Fields marked * are required.</p>
+
+            <form id="vehicleForm">
+
+                <fieldset>
+                <legend>Identification</legend>
+                <div class="grid">
+                    <div>
+                    <label for="vin">VIN <span class="hint">(17 characters, unique)</span></label>
+                    <input id="vin" class="vin-input" name="vin" maxlength="17" minlength="17" pattern="[A-HJ-NPR-Za-hj-npr-z0-9]{17}"
+                            title="17 characters; letters I, O and Q are not used in VINs" autocapitalize="characters">
+                    </div>
+                    <div>
+                    <label for="nickname">Nickname</label>
+                    <input id="nickname" name="nickname" maxlength="100" placeholder="e.g. The Daily">
+                    </div>
+                    <div>
+                    <label for="make" class="req">Make</label>
+                    <input id="make" name="make" maxlength="60" required>
+                    </div>
+                    <div>
+                    <label for="model" class="req">Model</label>
+                    <input id="model" name="model" maxlength="60" required>
+                    </div>
+                    <div>
+                    <label for="model_year" class="req">Model year</label>
+                    <input id="model_year" name="model_year" type="number" min="1900" max="2100" step="1" required>
+                    </div>
+                    <div>
+                    <label for="trim">Trim</label>
+                    <input id="trim" name="trim" maxlength="60">
+                    </div>
+                </div>
+                </fieldset>
+
+                <fieldset>
+                <legend>Specifications</legend>
+                <div class="grid">
+                    <div class="full">
+                    <label for="engine">Engine</label>
+                    <input id="engine" name="engine" maxlength="80" placeholder="e.g. 2.5L I4">
+                    </div>
+                    <div>
+                    <label for="transmission">Transmission</label>
+                    <input id="transmission" name="transmission" maxlength="40" list="transmissions">
+                    <datalist id="transmissions">
+                        <option value="Automatic"><option value="Manual"><option value="CVT"><option value="Dual-clutch">
+                    </datalist>
+                    </div>
+                    <div>
+                    <label for="body_type">Body type</label>
+                    <input id="body_type" name="body_type" maxlength="40" list="bodies">
+                    <datalist id="bodies">
+                        <option value="Sedan"><option value="SUV"><option value="Truck"><option value="Coupe">
+                        <option value="Hatchback"><option value="Wagon"><option value="Van"><option value="Convertible">
+                    </datalist>
+                    </div>
+                </div>
+                </fieldset>
+
+                <fieldset>
+                <legend>Condition &amp; Value</legend>
+                <div class="grid">
+                    <div>
+                    <label for="current_mileage" class="req">Current mileage</label>
+                    <input id="current_mileage" name="current_mileage" type="number" min="0" step="1" value="0" required>
+                    </div>
+                    <div>
+                    <label for="estimated_value">Estimated value ($)</label>
+                    <input id="estimated_value" name="estimated_value" type="number" min="0" max="99999999.99" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="full">
+                    <label for="image_url">Image URL</label>
+                    <input id="image_url" name="image_url" type="url" maxlength="500" placeholder="https://…">
+                    </div>
+                </div>
+                </fieldset>
+
+                <fieldset>
+                <legend>Maintenance Schedule <span class="hint">(optional)</span></legend>
+                <div id="scheduleRows"></div>
+                <button type="button" class="secondary" id="addRow">+ Add maintenance item</button>
+                </fieldset>
+
+                <div class="actions">
+                <button type="reset" class="reset">Reset</button>
+                <button type="submit" class="primary">Register vehicle</button>
+                </div>
+            </form>
+
+            <p id="form-message" class="form-message" role="alert" hidden></p>
+        </main>
+
+        <template id="rowTpl">
+            <div class="sched">
+                <button type="button" class="remove">Remove</button>
+                <div class="grid">
+                <div>
+                    <label>Maintenance type ID</label>
+                    <input data-f="maintenance_type_id" type="number" min="1" step="1" required>
+                </div>
+                <div>
+                    <label>Due mileage</label>
+                    <input data-f="due_mileage" type="number" min="0" step="1">
+                </div>
+                <div>
+                    <label>Due date</label>
+                    <input data-f="due_date" type="date">
+                </div>
+                <div>
+                    <label>Status</label>
+                    <input data-f="status" maxlength="20" value="good" required list="statuses">
+                </div>
+                <div class="full">
+                    <label>Notes</label>
+                    <input data-f="notes" maxlength="255">
+                </div>
+                </div>
+            </div>
+        </template>
+        <datalist id="statuses"><option value="good"><option value="due_soon"><option value="overdue"></datalist>
+
+        <script src="/client/js/pages/register_vehicle.js"></script>
+    </body>
+</html>

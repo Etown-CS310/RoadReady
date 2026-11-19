@@ -43,6 +43,7 @@ const dashboardRoutes = require("./routes/dashboard");
 const maintenanceRoutes = require("./routes/maintenance");
 const maintenanceGuideRoutes = require("./routes/maintenance-guide");
 const vehicleRoutes = require("./routes/vehicle");
+const registerVehicleRoutes = require("./routes/register_vehicle");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -82,6 +83,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/maintenance-guide", maintenanceGuideRoutes);
 app.use("/api/vehicle", vehicleRoutes);
+app.use("/api/register_vehicle", registerVehicleRoutes);
 
 // --------------------------------------------------
 // PROTECTED DASHBOARD
@@ -147,6 +149,7 @@ app.get("/web/:page.html", requirePageLogin, (req, res, next) => {
         "dashboard.html",
         "maintenance.html",
         "vehicle.html",
+        "register_vehicle.html",
         "maintenance-guide.html",
         "reminders.html"
     ];

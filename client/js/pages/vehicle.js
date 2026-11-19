@@ -64,6 +64,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const importButton = document.getElementById("import");
     const csvInput = document.getElementById("csv-input");
 
+    const registerVehicleButton = document.getElementById("register-vehicle-button");
+
     // Only the make/model/year/mileage columns are required.
     // The rest are optional and default to empty.
     const requiredHeaders = [
@@ -98,6 +100,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Attached once, instead of on every button click.
         csvInput.addEventListener("change", readFile);
     }
+
+    registerVehicleButton.addEventListener("click", function () {
+        window.location.href = "/web/register_vehicle.html";
+    });
 
 
     // Parse CSV while respecting quoted fields.
