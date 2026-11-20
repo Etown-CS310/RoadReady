@@ -1,3 +1,4 @@
+
 /*
  * Filename: /client/js/pages/maintenance-guide.js
  *
@@ -10,6 +11,7 @@
  * - Allow the user to select a guide topic.
  * - Display the selected guide category, title, summary, body,
  *   and risks if maintenance is skipped.
+ * - Convert stored Markdown into properly formatted HTML.
  * - Remember the selected guide using localStorage.
  *
  * This file does NOT:
@@ -80,8 +82,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             userElement.textContent =
                 "👤 " +
                 (
-                    data.user.fullName ||
-                    data.user.email
+                    data.user?.fullName ||
+                    data.user?.email ||
+                    "User"
                 );
         }
 
@@ -93,9 +96,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (guides.length === 0) {
 
             if (topicsElement) {
-                topicsElement.innerHTML = `
-                    <p>No guide topics found.</p>
-                `;
+                topicsElement.innerHTML =
+                    "<p>No guide topics found.</p>";
             }
 
             if (categoryElement) {
@@ -194,17 +196,23 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 this.dataset.guideId
                             );
 
+                        const selectedGuide =
+                            guides.find(function (item) {
+                                return Number(item.id) ===
+                                    guideId;
+                            });
+
+                        if (!selectedGuide) {
+                            return;
+                        }
+
                         localStorage.setItem(
                             "selectedGuideId",
                             guideId
                         );
 
                         renderGuide(
-                            guides.find(function (item) {
-                                return Number(item.id) ===
-                                    guideId;
-                            }),
-                            guides
+                            selectedGuide
                         );
                     }
                 );
@@ -218,10 +226,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // DISPLAY GUIDE
         // ------------------------------------------
 
-        renderGuide(
-            selected,
-            guides
-        );
+        renderGuide(selected);
 
 
     } catch (error) {
@@ -252,7 +257,181 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 
-function renderGuide(selected, guides) {
+// ------------------------------------------
+// MARKDOWN CONVERSION
+// ------------------------------------------
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function formatInlineMarkdown(value) {
+
+    let html = escapeHTML(value);
+
+    // Inline code
+    html = html.replace(
+        /`([^`]+)`/g,
+        "<code>$1</code>"
+    );
+
+    // Bold
+    html = html.replace(
+        /\*\*(.+?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+    // Italic
+    html = html.replace(
+        /\*(.+?)\*/g,
+        "<em>$1</em>"
+    );
+
+    return html;
+}
+
+
+function markdownToHTML(markdown) {
+
+    if (!markdown) {
+        return "";
+    }
+
+    // Normalize line endings and common formatting.
+    let source = String(markdown)
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+
+    // Support headings and bullet lists even if the
+    // database content was saved as one long line.
+    source = source
+        .replace(/[ \t]*\\?(?=##\s)/g, "\n\n")
+        .replace(/[ \t]+(?=-\s)/g, "\n");
+
+    const lines =
+        source.split("\n");
+
+    const output = [];
+
+    let paragraph = [];
+    let listOpen = false;
+
+
+    function closeList() {
+
+        if (listOpen) {
+            output.push("</ul>");
+            listOpen = false;
+        }
+    }
+
+
+    function flushParagraph() {
+
+        if (paragraph.length > 0) {
+
+            output.push(
+                "<p>" +
+                formatInlineMarkdown(
+                    paragraph.join(" ")
+                ) +
+                "</p>"
+            );
+
+            paragraph = [];
+        }
+    }
+
+
+    lines.forEach(function (rawLine) {
+
+        const line =
+            rawLine.trim();
+
+        // Blank line
+        if (!line) {
+            flushParagraph();
+            closeList();
+            return;
+        }
+
+
+        // Heading
+        const headingMatch =
+            line.match(/^(#{1,6})\s+(.+)$/);
+
+        if (headingMatch) {
+
+            flushParagraph();
+            closeList();
+
+            const level =
+                headingMatch[1].length;
+
+            output.push(
+                "<h" + level + ">" +
+                formatInlineMarkdown(
+                    headingMatch[2]
+                ) +
+                "</h" + level + ">"
+            );
+
+            return;
+        }
+
+
+        // Unordered list item
+        const listMatch =
+            line.match(/^[-*]\s+(.+)$/);
+
+        if (listMatch) {
+
+            flushParagraph();
+
+            if (!listOpen) {
+                output.push("<ul>");
+                listOpen = true;
+            }
+
+            output.push(
+                "<li>" +
+                formatInlineMarkdown(
+                    listMatch[1]
+                ) +
+                "</li>"
+            );
+
+            return;
+        }
+
+
+        // Regular paragraph line
+        closeList();
+
+        paragraph.push(line);
+    });
+
+
+    flushParagraph();
+    closeList();
+
+    return output.join("\n");
+}
+
+
+// ------------------------------------------
+// DISPLAY GUIDE
+// ------------------------------------------
+
+function renderGuide(selected) {
 
     if (!selected) {
         return;
@@ -319,16 +498,11 @@ function renderGuide(selected, guides) {
             selected.summary || "";
     }
 
-
-    // body_markdown currently contains
-    // the article body from the database.
-    //
-    // For now we display it as HTML so the
-    // existing formatting continues to work.
-
     if (bodyElement) {
         bodyElement.innerHTML =
-            selected.body_markdown || "";
+            markdownToHTML(
+                selected.body_markdown || ""
+            );
     }
 
 

@@ -1,3 +1,4 @@
+
 /*
  * Filename: /client/js/pages/maintenance.js
  *
@@ -56,6 +57,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             "customMaintenanceType"
         );
 
+    const dueMileageInput =
+        document.getElementById("dueMileage");
+
+    const dueDateInput =
+        document.getElementById("dueDate");
+
     // ==========================================================
     // "OTHER" MAINTENANCE TYPE
     // ==========================================================
@@ -66,6 +73,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             function () {
 
                 if (this.value === "Other") {
+
                     if (customMaintenanceTypeContainer) {
                         customMaintenanceTypeContainer.style.display =
                             "block";
@@ -74,7 +82,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                     if (customMaintenanceType) {
                         customMaintenanceType.required = true;
                     }
+
                 } else {
+
                     if (customMaintenanceTypeContainer) {
                         customMaintenanceTypeContainer.style.display =
                             "none";
@@ -286,6 +296,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             "Please select a maintenance type."
                         );
 
+                        maintenanceType.focus();
                         return;
                     }
 
@@ -297,18 +308,61 @@ document.addEventListener("DOMContentLoaded", async function () {
                             "Please enter a custom maintenance type."
                         );
 
+                        customMaintenanceType.focus();
                         return;
                     }
 
                     const dueMileage =
-                        document.getElementById(
-                            "dueMileage"
-                        ).value;
+                        dueMileageInput.value.trim();
 
                     const dueDate =
-                        document.getElementById(
-                            "dueDate"
-                        ).value;
+                        dueDateInput.value;
+
+                    // ------------------------------------------
+                    // REQUIRED DUE MILEAGE
+                    // ------------------------------------------
+
+                    // Mileage is required.
+                    // A mileage value of 0 is valid.
+
+                    if (dueMileage === "") {
+                        alert(
+                            "Please enter the due mileage."
+                        );
+
+                        dueMileageInput.focus();
+                        return;
+                    }
+
+                    if (
+                        !Number.isFinite(Number(dueMileage)) ||
+                        Number(dueMileage) < 0 ||
+                        !Number.isInteger(Number(dueMileage))
+                    ) {
+                        alert(
+                            "Please enter a valid whole-number mileage of 0 or greater."
+                        );
+
+                        dueMileageInput.focus();
+                        return;
+                    }
+
+                    // ------------------------------------------
+                    // REQUIRED DUE DATE
+                    // ------------------------------------------
+
+                    if (!dueDate) {
+                        alert(
+                            "Please select a due date."
+                        );
+
+                        dueDateInput.focus();
+                        return;
+                    }
+
+                    // ------------------------------------------
+                    // OPTIONAL NOTES
+                    // ------------------------------------------
 
                     const notes =
                         document.getElementById(
@@ -343,12 +397,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                                     body: JSON.stringify({
                                         maintenanceType:
                                             selectedType,
+
                                         customMaintenanceType:
                                             customType,
+
                                         dueMileage:
-                                            dueMileage || null,
+                                            dueMileage,
+
                                         dueDate:
-                                            dueDate || null,
+                                            dueDate,
+
                                         notes:
                                             notes || null
                                     })
@@ -369,7 +427,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 JSON.parse(
                                     responseText
                                 );
+
                         } catch (parseError) {
+
                             console.error(
                                 "Server returned non-JSON response:",
                                 responseText
@@ -456,6 +516,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         );
 
                     } catch (error) {
+
                         console.error(
                             "Add maintenance error:",
                             error
@@ -466,6 +527,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         );
 
                     } finally {
+
                         submitButton.disabled =
                             false;
 
@@ -486,6 +548,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
     } catch (error) {
+
         console.error(
             "Maintenance loading error:",
             error
@@ -552,9 +615,13 @@ function renderVehicleMaintenance(
     maintenanceList.replaceChildren();
 
     if (schedule.length === 0) {
+
         renderEmptyMaintenance();
+
     } else {
+
         schedule.forEach(function (item) {
+
             const itemElement =
                 document.createElement("div");
 
@@ -637,10 +704,13 @@ function renderVehicleMaintenance(
                 const statusText = {
                     overdue:
                         "Overdue",
+
                     soon:
                         "Due Soon",
+
                     good:
                         "Scheduled",
+
                     completed:
                         "Completed"
                 };
@@ -668,12 +738,14 @@ function renderVehicleMaintenance(
             completeButton.type = "button";
             completeButton.className =
                 "btn btn-sm btn-outline-primary";
+
             completeButton.textContent =
                 "Mark Complete";
 
             completeButton.addEventListener(
                 "click",
                 function () {
+
                     changeScheduleItem(
                         item.id,
                         "PATCH",
@@ -689,6 +761,7 @@ function renderVehicleMaintenance(
             deleteButton.type = "button";
             deleteButton.className =
                 "btn btn-sm btn-outline-danger";
+
             deleteButton.textContent =
                 "Delete";
 
@@ -715,6 +788,7 @@ function renderVehicleMaintenance(
 
             actions.appendChild(completeButton);
             actions.appendChild(deleteButton);
+
             itemElement.appendChild(actions);
 
             maintenanceList.appendChild(
@@ -730,8 +804,11 @@ function renderVehicleMaintenance(
     maintenanceHistory.replaceChildren();
 
     if (history.length === 0) {
+
         renderEmptyHistory();
+
     } else {
+
         const table =
             document.createElement("table");
 
@@ -747,6 +824,7 @@ function renderVehicleMaintenance(
             "Mileage",
             "Notes"
         ].forEach(function (heading) {
+
             const th =
                 document.createElement("th");
 
@@ -763,6 +841,7 @@ function renderVehicleMaintenance(
             document.createElement("tbody");
 
         history.forEach(function (item) {
+
             const row =
                 document.createElement("tr");
 
@@ -818,7 +897,12 @@ function renderVehicleMaintenance(
 // UPDATE / DELETE A SCHEDULE ITEM, THEN REFRESH THE PAGE
 // ==========================================================
 
-async function changeScheduleItem(id, method, body, button) {
+async function changeScheduleItem(
+    id,
+    method,
+    body,
+    button
+) {
 
     button.disabled = true;
 
@@ -833,16 +917,23 @@ async function changeScheduleItem(id, method, body, button) {
             options.headers = {
                 "Content-Type": "application/json"
             };
+
             options.body = JSON.stringify(body);
         }
 
         const response =
-            await fetch(`/api/maintenance/${id}`, options);
+            await fetch(
+                `/api/maintenance/${id}`,
+                options
+            );
 
         const result =
             await response.json();
 
-        if (!response.ok || !result.success) {
+        if (
+            !response.ok ||
+            !result.success
+        ) {
             throw new Error(
                 result.message ||
                 "Could not update maintenance."
@@ -850,22 +941,31 @@ async function changeScheduleItem(id, method, body, button) {
         }
 
         // Reload from the database so the lists reflect the change.
+
         const refresh =
-            await fetch("/api/maintenance", {
-                credentials: "include"
-            });
+            await fetch(
+                "/api/maintenance",
+                {
+                    credentials: "include"
+                }
+            );
 
         const data =
             await refresh.json();
 
-        if (!refresh.ok || !data.success) {
+        if (
+            !refresh.ok ||
+            !data.success
+        ) {
             throw new Error(
                 "Saved, but the page could not refresh."
             );
         }
 
         const selector =
-            document.getElementById("maintenanceVehicle");
+            document.getElementById(
+                "maintenanceVehicle"
+            );
 
         renderVehicleMaintenance(
             Number(selector.value),
@@ -873,14 +973,25 @@ async function changeScheduleItem(id, method, body, button) {
         );
 
         // Keep the add-form handler's copy of the data current.
+
         window.dispatchEvent(
-            new CustomEvent("maintenance-refreshed", { detail: data })
+            new CustomEvent(
+                "maintenance-refreshed",
+                {
+                    detail: data
+                }
+            )
         );
 
     } catch (error) {
 
-        console.error("Maintenance update error:", error);
+        console.error(
+            "Maintenance update error:",
+            error
+        );
+
         alert(error.message);
+
         button.disabled = false;
     }
 }
@@ -890,6 +1001,7 @@ async function changeScheduleItem(id, method, body, button) {
 // ==========================================================
 
 function renderEmptyMaintenance() {
+
     const maintenanceList =
         document.getElementById(
             "maintenance-list"
@@ -907,6 +1019,7 @@ function renderEmptyMaintenance() {
 }
 
 function renderEmptyHistory() {
+
     const maintenanceHistory =
         document.getElementById(
             "maintenance-history"
@@ -928,11 +1041,13 @@ function renderEmptyHistory() {
 // ==========================================================
 
 function formatDate(dateValue) {
+
     if (!dateValue) {
         return "";
     }
 
     // "YYYY-MM-DD" strings are parsed as local dates (no UTC shift).
+
     const date =
         new Date(
             String(dateValue).slice(0, 10) + "T00:00:00"

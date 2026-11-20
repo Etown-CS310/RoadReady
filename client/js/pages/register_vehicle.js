@@ -1,3 +1,4 @@
+
 /*
  * Filename: /client/js/pages/register_vehicle.js
  *
@@ -6,6 +7,7 @@
  * Responsibilities:
  * - Manage the optional maintenance schedule rows on the form.
  * - Collect the form fields into a vehicle payload.
+ * - Validate required vehicle information before submission.
  * - Send the payload to the server API to register the vehicle.
  * - Display success and error messages to the user.
  * - Remember the new vehicle as the selected vehicle using localStorage.
@@ -98,6 +100,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // ------------------------------------------
+    // VEHICLE FIELD VALIDATION
+    // ------------------------------------------
+
+    function validateVehicleFields() {
+
+        const vinInput =
+            document.getElementById("vin");
+
+        const mileageInput =
+            document.getElementById("current_mileage");
+
+        // VIN is required and must contain exactly 17 valid characters.
+        const vin = vinInput.value.trim().toUpperCase();
+
+        vinInput.value = vin;
+
+        const vinPattern = /^[A-HJ-NPR-Z0-9]{17}$/;
+
+        if (!vin) {
+            showMessage("VIN is required.", true);
+            vinInput.focus();
+            return false;
+        }
+
+        if (!vinPattern.test(vin)) {
+            showMessage(
+                "VIN must contain exactly 17 characters. Letters I, O and Q are not allowed.",
+                true
+            );
+            vinInput.focus();
+            return false;
+        }
+
+        // Current mileage is required, must be a whole number,
+        // and must be zero or greater.
+        const mileageValue = mileageInput.value.trim();
+        const mileage = Number(mileageValue);
+
+        if (
+            mileageValue === "" ||
+            !Number.isSafeInteger(mileage) ||
+            mileage < 0
+        ) {
+            showMessage(
+                "Current mileage is required and must be a whole number of 0 or greater.",
+                true
+            );
+            mileageInput.focus();
+            return false;
+        }
+
+        return true;
+    }
+
+
+    // ------------------------------------------
     // MAINTENANCE SCHEDULE ROWS
     // ------------------------------------------
 
@@ -162,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         vehicle.model_year = Number(vehicle.model_year);
-        vehicle.current_mileage = Number(vehicle.current_mileage || 0);
+        vehicle.current_mileage = Number(vehicle.current_mileage);
 
         if (vehicle.estimated_value !== null) {
             vehicle.estimated_value = Number(vehicle.estimated_value);
@@ -202,7 +260,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         clearMessage();
 
+        // Run the browser's required, pattern, min and step validation.
         if (!form.reportValidity()) {
+            return;
+        }
+
+        // Run additional VIN and mileage validation.
+        if (!validateVehicleFields()) {
             return;
         }
 

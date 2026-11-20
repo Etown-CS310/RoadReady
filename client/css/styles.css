@@ -1138,15 +1138,14 @@ body.dark-mode .reminder-help {
     }
 }
 
-
 /* =========================================
    REMINDERS PAGE - LAYOUT AND COMPONENTS
 ========================================= */
 
 .reminders-page {
-    width: calc(100% - 230px);
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
-    overflow-x: hidden;
 }
 
 .reminders-page > section {
@@ -1263,18 +1262,13 @@ body.dark-mode .reminder-status.completed {
 /* Responsive layout */
 
 @media (max-width: 900px) {
-    .reminders-page {
-        width: calc(100% - 180px);
+    .reminder-card {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
 
 @media (max-width: 600px) {
-    .reminders-page {
-        width: 100%;
-        margin-left: 0;
-        padding: 20px;
-    }
-
     .reminder-card {
         align-items: flex-start;
         flex-direction: column;
@@ -1284,31 +1278,266 @@ body.dark-mode .reminder-status.completed {
         justify-content: flex-start;
     }
 }
-:root { --bg:#f5f6f8; --card:#fff; --ink:#1c2230; --muted:#667085; --line:#d5d9e0; --accent:#2457d6; --danger:#c0392b; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#14171d; --card:#1c2029; --ink:#e8ebf1; --muted:#98a1b2; --line:#343b4a; --accent:#6c9bff; --danger:#ff8070; }
-  }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  main { max-width:760px; margin:0 auto; padding:24px 16px 64px; }
-  h1 { font-size:1.6rem; margin:0 0 4px; }
-  .sub { color:var(--muted); margin:0 0 20px; }
-  fieldset { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px 18px; margin:0 0 16px; }
-  legend { font-weight:600; padding:0 6px; }
-  .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
-  .full { grid-column:1 / -1; }
-  label { display:block; font-size:.88rem; font-weight:500; margin-bottom:4px; }
-  .req::after { content:" *"; color:var(--danger); }
-  .hint { font-weight:400; color:var(--muted); font-size:.78rem; }
-  input, select, textarea { width:100%; padding:9px 10px; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:8px; }
-  input:focus, select:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; }
-  input:user-invalid { border-color:var(--danger); }
-  .sched { border:1px dashed var(--line); border-radius:10px; padding:12px; margin-bottom:12px; position:relative; }
-  .sched .grid { grid-template-columns:repeat(4,1fr); }
-  .remove { position:absolute; top:6px; right:8px; background:none; border:none; color:var(--danger); cursor:pointer; font-size:.82rem; }
-  button.secondary { background:none; border:1px solid var(--accent); color:var(--accent); padding:8px 14px; border-radius:8px; cursor:pointer; font:inherit; }
-  .actions { display:flex; gap:10px; justify-content:flex-end; margin-top:8px; }
-  button.primary { background:var(--accent); color:#fff; border:none; padding:11px 22px; border-radius:8px; cursor:pointer; font:inherit; font-weight:600; }
-  button.reset { background:none; border:1px solid var(--line); color:var(--ink); padding:11px 18px; border-radius:8px; cursor:pointer; font:inherit; }
-  #preview { white-space:pre-wrap; font:13px/1.4 ui-monospace,Menlo,monospace; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-top:16px; display:none; }
-  @media (max-width:640px) { .grid, .sched .grid { grid-template-columns:1fr; } }
+
+/* Space between vehicle action buttons and vehicle cards */
+.vehicle-actions {
+    margin-bottom: 30px;
+}
+
+
+/* =========================================
+   REGISTER VEHICLE PAGE
+========================================= */
+
+body:has(#vehicleForm) {
+    background: #f4f6f8;
+}
+
+body:has(#vehicleForm) main {
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 40px 30px;
+}
+
+body:has(#vehicleForm) main > h1 {
+    font-size: 28px;
+    color: #17202a;
+    margin-bottom: 8px;
+}
+
+body:has(#vehicleForm) .sub {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 28px;
+}
+
+#vehicleForm {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* Form sections */
+
+#vehicleForm fieldset {
+    min-width: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    padding: 24px;
+}
+
+#vehicleForm legend {
+    padding: 0 8px;
+    font-size: 17px;
+    font-weight: bold;
+    color: #17202a;
+}
+
+#vehicleForm .hint {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+#vehicleForm label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    color: #374151;
+    margin-bottom: 7px;
+}
+
+#vehicleForm label.req::after {
+    content: " *";
+    color: #dc2626;
+}
+
+/* Input grid */
+
+#vehicleForm .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+#vehicleForm .grid > div {
+    min-width: 0;
+}
+
+#vehicleForm .grid .full {
+    grid-column: 1 / -1;
+}
+
+/* Inputs */
+
+#vehicleForm input {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: white;
+    color: #17202a;
+    font: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#vehicleForm input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Buttons */
+
+#vehicleForm button {
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#vehicleForm .primary {
+    background: #2563eb;
+    color: white;
+}
+
+#vehicleForm .primary:hover {
+    background: #1d4ed8;
+}
+
+#vehicleForm .secondary {
+    background: #e5e7eb;
+    color: #374151;
+    margin-top: 16px;
+}
+
+#vehicleForm .secondary:hover {
+    background: #d1d5db;
+}
+
+#vehicleForm .reset {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+#vehicleForm .reset:hover {
+    background: #d1d5db;
+}
+
+/* Maintenance schedule rows */
+
+#vehicleForm .sched {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    padding: 24px 18px 18px;
+    margin-bottom: 14px;
+    background: #f9fafb;
+}
+
+#vehicleForm .sched .remove {
+    display: block;
+    margin-left: auto;
+    margin-bottom: 15px;
+    padding: 7px 11px;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+#vehicleForm .sched .remove:hover {
+    background: #fee2e2;
+}
+
+/* Bottom actions */
+
+#vehicleForm .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 4px 0 12px;
+}
+
+#vehicleForm .actions button {
+    min-width: 125px;
+    padding: 12px 18px;
+}
+
+/* Form messages */
+
+.form-message {
+    margin-top: 15px;
+    padding: 13px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* Dark mode */
+
+body.dark-mode:has(#vehicleForm) {
+    background: #171923;
+}
+
+body.dark-mode:has(#vehicleForm) main > h1,
+body.dark-mode #vehicleForm legend {
+    color: #f1f3f9;
+}
+
+body.dark-mode #vehicleForm fieldset {
+    background: #222635;
+    border-color: #454c60;
+}
+
+body.dark-mode #vehicleForm label {
+    color: #f1f3f9;
+}
+
+body.dark-mode #vehicleForm input {
+    background: #202535;
+    color: #f1f3f9;
+    border-color: #626b80;
+}
+
+body.dark-mode #vehicleForm .sched {
+    background: #292e40;
+    border-color: #454c60;
+}
+
+body.dark-mode #vehicleForm .secondary,
+body.dark-mode #vehicleForm .reset {
+    background: #3a4053;
+    color: #f1f3f9;
+}
+
+/* Responsive */
+
+@media (max-width: 650px) {
+    body:has(#vehicleForm) main {
+        padding: 25px 16px;
+    }
+
+    #vehicleForm fieldset {
+        padding: 18px;
+    }
+
+    #vehicleForm .grid {
+        grid-template-columns: 1fr;
+    }
+
+    #vehicleForm .grid .full {
+        grid-column: auto;
+    }
+
+    #vehicleForm .actions {
+        flex-direction: column-reverse;
+    }
+
+    #vehicleForm .actions button {
+        width: 100%;
+    }
+}

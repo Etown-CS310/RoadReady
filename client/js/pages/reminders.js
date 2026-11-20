@@ -1,24 +1,27 @@
 
 /*
- * Filename: /client/js/reminders.js
+ * Filename: /client/js/pages/reminders.js
  *
  * This file controls the RoadReady Reminders page.
  *
  * Responsibilities:
  * - Load the authenticated user's vehicles.
- * - Load scheduled maintenance from the Maintenance API.
+ * - Load scheduled maintenance and custom reminders from the database.
  * - Display upcoming, overdue, and completed reminders.
  * - Allow users to create custom reminders.
  * - Allow users to mark reminders as completed or reopen them.
  * - Allow users to delete custom reminders.
- * - Remember custom and completed reminders using localStorage.
+ * - Migrate existing localStorage reminders into the database.
+ * - Remember the selected vehicle using localStorage.
  *
  * This file does NOT:
  * - Query MySQL directly.
  * - Contain SQL queries.
  * - Manage authentication directly.
  *
- * Database data is provided by /server/routes/maintenance.js.
+ * Database data is provided by:
+ * - /server/routes/maintenance.js
+ * - /server/routes/reminders.js
  */
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -60,18 +63,78 @@ document.addEventListener("DOMContentLoaded", async function () {
     const upcomingCount =
         document.getElementById("upcomingCount");
 
+
+    // ==========================================================
+    // STORAGE KEYS
+    // ==========================================================
+
+    // These two keys are retained temporarily for migration.
     const customStorageKey =
         "roadReadyCustomReminders";
 
     const completedStorageKey =
         "roadReadyCompletedReminders";
 
+    // Migration progress prevents already-imported custom
+    // reminders from being inserted again if migration fails.
+    const migrationStorageKey =
+        "roadReadyReminderMigration";
+
+    // This is still a UI preference, not application data.
     const selectedVehicleStorageKey =
         "roadReadySelectedReminderVehicle";
 
+
+    // ==========================================================
+    // PAGE DATA
+    // ==========================================================
+
     let vehicles = [];
     let maintenance = [];
+    let customReminders = [];
+
     let activeFilter = "all";
+
+
+    // ==========================================================
+    // API HELPERS
+    // ==========================================================
+
+    async function apiRequest(url, options = {}) {
+
+        const response = await fetch(url, {
+            credentials: "include",
+            ...options,
+            headers: {
+                ...(options.headers || {})
+            }
+        });
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch (error) {
+            // A non-JSON response is handled below.
+        }
+
+        if (!response.ok || data.success === false) {
+
+            if (response.status === 401) {
+                throw new Error(
+                    "Please log in to view your reminders."
+                );
+            }
+
+            throw new Error(
+                data.message ||
+                "The request could not be completed."
+            );
+        }
+
+        return data;
+    }
+
 
     // ==========================================================
     // LOCAL STORAGE
@@ -99,6 +162,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+
     function saveStorage(key, value) {
 
         try {
@@ -108,16 +172,21 @@ document.addEventListener("DOMContentLoaded", async function () {
                 JSON.stringify(value)
             );
 
+            return true;
+
         } catch (error) {
 
             console.error(
                 `Could not save ${key}:`,
                 error
             );
+
+            return false;
         }
     }
 
-    function getCustomReminders() {
+
+    function getLegacyCustomReminders() {
 
         const reminders =
             readStorage(customStorageKey, []);
@@ -127,7 +196,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             : [];
     }
 
-    function getCompletedReminders() {
+
+    function getLegacyCompletedReminders() {
 
         const completed =
             readStorage(completedStorageKey, []);
@@ -137,48 +207,221 @@ document.addEventListener("DOMContentLoaded", async function () {
             : [];
     }
 
+
+    function getMigrationProgress() {
+
+        const progress =
+            readStorage(migrationStorageKey, {});
+
+        return (
+            progress &&
+            typeof progress === "object" &&
+            !Array.isArray(progress)
+        )
+            ? progress
+            : {};
+    }
+
+
     // ==========================================================
     // LOAD DATABASE DATA
     // ==========================================================
 
     async function loadReminderData() {
 
-        const response = await fetch(
-            "/api/maintenance",
-            {
-                credentials: "include"
-            }
+        // Vehicles and current mileage come from the
+        // existing Maintenance API.
+
+        const maintenanceData = await apiRequest(
+            "/api/maintenance"
         );
 
-        if (!response.ok) {
+        // Scheduled and custom reminders come from
+        // the new Reminders API.
 
-            if (response.status === 401) {
-                throw new Error(
-                    "Please log in to view your reminders."
-                );
-            }
-
-            throw new Error(
-                "Could not load maintenance data."
-            );
-        }
-
-        const data =
-            await response.json();
-
-        if (!data.success) {
-            throw new Error(
-                data.message ||
-                "Could not load maintenance data."
-            );
-        }
+        const reminderData = await apiRequest(
+            "/api/reminders"
+        );
 
         vehicles =
-            data.vehicles || [];
+            maintenanceData.vehicles || [];
 
         maintenance =
-            data.maintenance || [];
+            reminderData.scheduledReminders || [];
+
+        customReminders =
+            reminderData.customReminders || [];
     }
+
+
+    // ==========================================================
+    // MIGRATE OLD LOCAL STORAGE DATA
+    // ==========================================================
+
+    async function migrateLegacyReminders() {
+
+        const oldCustomReminders =
+            getLegacyCustomReminders();
+
+        const oldCompletedReminders =
+            getLegacyCompletedReminders();
+
+        const progress =
+            getMigrationProgress();
+
+
+        // ------------------------------------------------------
+        // MIGRATE CUSTOM REMINDERS
+        // ------------------------------------------------------
+
+        for (const oldReminder of oldCustomReminders) {
+
+            if (
+                !oldReminder ||
+                !oldReminder.id ||
+                !oldReminder.vehicleId ||
+                !oldReminder.name
+            ) {
+                console.warn(
+                    "Skipping invalid legacy reminder:",
+                    oldReminder
+                );
+
+                continue;
+            }
+
+            const oldId =
+                String(oldReminder.id);
+
+            let databaseId =
+                progress[oldId];
+
+
+            // Create the database record if it has not
+            // already been migrated.
+
+            if (!databaseId) {
+
+                const created = await apiRequest(
+                    "/api/reminders",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            vehicleId: Number(oldReminder.vehicleId),
+                            name: oldReminder.name,
+                            dueDate: oldReminder.dueDate || null,
+                            dueMileage:
+                                oldReminder.dueMileage === "" ||
+                                oldReminder.dueMileage === undefined
+                                    ? null
+                                    : oldReminder.dueMileage,
+                            notes: oldReminder.notes || null
+                        })
+                    }
+                );
+
+                databaseId =
+                    created.reminder.id;
+
+                // Save progress immediately so a later
+                // failure does not normally create duplicates.
+
+                progress[oldId] =
+                    databaseId;
+
+                if (!saveStorage(migrationStorageKey, progress)) {
+                    throw new Error(
+                        "Could not save reminder migration progress."
+                    );
+                }
+            }
+
+
+            // Restore completion state if the old reminder
+            // had been marked complete.
+
+            if (
+                oldCompletedReminders.includes(oldId)
+            ) {
+
+                await apiRequest(
+                    `/api/reminders/${databaseId}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            completed: true
+                        })
+                    }
+                );
+            }
+        }
+
+
+        // ------------------------------------------------------
+        // MIGRATE SCHEDULED MAINTENANCE COMPLETION FLAGS
+        // ------------------------------------------------------
+
+        for (const completedId of oldCompletedReminders) {
+
+            const match =
+                completedId.match(/^maintenance-(\d+)$/);
+
+            if (!match) {
+                continue;
+            }
+
+            const scheduleId =
+                Number(match[1]);
+
+            const scheduledItem =
+                maintenance.find(function (item) {
+                    return Number(item.id) === scheduleId;
+                });
+
+            if (!scheduledItem) {
+                continue;
+            }
+
+            // Do not create another history entry if the
+            // scheduled item is already completed.
+
+            if (scheduledItem.status === "completed") {
+                continue;
+            }
+
+            await apiRequest(
+                `/api/maintenance/${scheduleId}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        status: "completed"
+                    })
+                }
+            );
+        }
+
+
+        // ------------------------------------------------------
+        // FINISH MIGRATION
+        // ------------------------------------------------------
+
+        // Only clear the old storage after every migration
+        // operation has completed successfully.
+
+        localStorage.removeItem(customStorageKey);
+        localStorage.removeItem(completedStorageKey);
+        localStorage.removeItem(migrationStorageKey);
+    }
+
 
     // ==========================================================
     // VEHICLE SELECTOR
@@ -198,6 +441,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             ? `${vehicle.nickname} — ${fullName}`
             : fullName || "Vehicle";
     }
+
 
     function populateVehicleSelector() {
 
@@ -257,6 +501,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 document.createElement("option");
 
             option.value = vehicle.id;
+
             option.textContent =
                 getVehicleName(vehicle);
 
@@ -273,6 +518,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
     }
 
+
     function getSelectedVehicleId() {
 
         return vehicleSelect
@@ -280,54 +526,73 @@ document.addEventListener("DOMContentLoaded", async function () {
             : 0;
     }
 
+
     // ==========================================================
     // REMINDER DATA
     // ==========================================================
 
     function getAllReminders() {
 
-        const completed =
-            getCompletedReminders();
-
         const scheduledReminders =
             maintenance.map(function (item) {
 
                 return {
                     id: `maintenance-${item.id}`,
-                    sourceId: item.id,
+                    sourceId: Number(item.id),
                     source: "scheduled",
+
                     vehicleId: Number(item.vehicle_id),
+
                     name: item.maintenance_name ||
                         "Scheduled maintenance",
+
                     detail: "",
+
                     dueDate: item.due_date || "",
+
                     dueMileage: item.due_mileage,
+
                     notes: item.notes || "",
+
                     status: item.status || "good",
-                    completed: completed.includes(
-                        `maintenance-${item.id}`
-                    )
+
+                    completed:
+                        item.status === "completed"
                 };
             });
 
-        const customReminders =
-            getCustomReminders().map(function (item) {
+
+        const databaseCustomReminders =
+            customReminders.map(function (item) {
 
                 return {
-                    ...item,
+                    id: Number(item.id),
+
+                    sourceId: Number(item.id),
+
                     source: "custom",
-                    vehicleId: Number(item.vehicleId),
-                    completed: completed.includes(
-                        String(item.id)
-                    )
+
+                    vehicleId: Number(item.vehicle_id),
+
+                    name: item.name || "Reminder",
+
+                    dueDate: item.due_date || "",
+
+                    dueMileage: item.due_mileage,
+
+                    notes: item.notes || "",
+
+                    completed: Boolean(item.completed_at)
                 };
             });
+
 
         return [
             ...scheduledReminders,
-            ...customReminders
+            ...databaseCustomReminders
         ];
     }
+
 
     function getVehicle(vehicleId) {
 
@@ -336,6 +601,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 Number(vehicleId);
         });
     }
+
 
     // ==========================================================
     // REMINDER STATUS
@@ -371,6 +637,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (reminder.dueDate) {
 
             const today = new Date();
+
             today.setHours(0, 0, 0, 0);
 
             const dueDate =
@@ -409,6 +676,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         return "upcoming";
     }
 
+
     // ==========================================================
     // FORMATTING
     // ==========================================================
@@ -428,6 +696,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         return date.toLocaleDateString();
     }
+
 
     function getDueDescription(reminder) {
 
@@ -453,6 +722,25 @@ document.addEventListener("DOMContentLoaded", async function () {
             ? descriptions.join(" • ")
             : "No due date or mileage set";
     }
+
+
+    // ==========================================================
+    // REFRESH DATABASE DATA
+    // ==========================================================
+
+    async function refreshReminderData() {
+
+        const reminderData = await apiRequest(
+            "/api/reminders"
+        );
+
+        maintenance =
+            reminderData.scheduledReminders || [];
+
+        customReminders =
+            reminderData.customReminders || [];
+    }
+
 
     // ==========================================================
     // REMINDER CARD
@@ -537,6 +825,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         content.appendChild(statusText);
 
+
+        // ------------------------------------------------------
+        // ACTION BUTTONS
+        // ------------------------------------------------------
+
         const actions =
             document.createElement("div");
 
@@ -564,6 +857,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         actions.appendChild(completeButton);
+
+
+        // Only custom reminders can be deleted here.
 
         if (reminder.source === "custom") {
 
@@ -594,43 +890,73 @@ document.addEventListener("DOMContentLoaded", async function () {
         return card;
     }
 
+
     // ==========================================================
     // COMPLETE / REOPEN REMINDERS
     // ==========================================================
 
-    function toggleCompleted(reminder) {
+    async function toggleCompleted(reminder) {
 
-        let completed =
-            getCompletedReminders();
+        try {
 
-        const reminderId =
-            String(reminder.id);
+            if (reminder.source === "scheduled") {
 
-        if (completed.includes(reminderId)) {
+                // Scheduled maintenance uses its existing API.
 
-            completed =
-                completed.filter(function (id) {
-                    return id !== reminderId;
-                });
+                await apiRequest(
+                    `/api/maintenance/${reminder.sourceId}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            status: reminder.completed
+                                ? "good"
+                                : "completed"
+                        })
+                    }
+                );
 
-        } else {
+            } else {
 
-            completed.push(reminderId);
+                // Custom reminders use the new Reminders API.
+
+                await apiRequest(
+                    `/api/reminders/${reminder.sourceId}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            completed: !reminder.completed
+                        })
+                    }
+                );
+            }
+
+            await refreshReminderData();
+
+            renderReminders();
+
+        } catch (error) {
+
+            console.error(
+                "Could not update reminder:",
+                error
+            );
+
+            alert(error.message);
         }
-
-        saveStorage(
-            completedStorageKey,
-            completed
-        );
-
-        renderReminders();
     }
+
 
     // ==========================================================
     // DELETE CUSTOM REMINDER
     // ==========================================================
 
-    function deleteCustomReminder(reminderId) {
+    async function deleteCustomReminder(reminderId) {
 
         const confirmed =
             window.confirm(
@@ -641,33 +967,30 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        const reminders =
-            getCustomReminders().filter(
-                function (reminder) {
-                    return String(reminder.id) !==
-                        String(reminderId);
+        try {
+
+            await apiRequest(
+                `/api/reminders/${reminderId}`,
+                {
+                    method: "DELETE"
                 }
             );
 
-        saveStorage(
-            customStorageKey,
-            reminders
-        );
+            await refreshReminderData();
 
-        const completed =
-            getCompletedReminders().filter(
-                function (id) {
-                    return id !== String(reminderId);
-                }
+            renderReminders();
+
+        } catch (error) {
+
+            console.error(
+                "Could not delete reminder:",
+                error
             );
 
-        saveStorage(
-            completedStorageKey,
-            completed
-        );
-
-        renderReminders();
+            alert(error.message);
+        }
     }
+
 
     // ==========================================================
     // COUNTERS
@@ -712,6 +1035,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+
     // ==========================================================
     // RENDER REMINDERS
     // ==========================================================
@@ -751,7 +1075,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     return getStatus(reminder) ===
                         activeFilter;
                 });
-
         }
 
         reminders.sort(function (a, b) {
@@ -791,6 +1114,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
+
     // ==========================================================
     // FILTER BUTTONS
     // ==========================================================
@@ -815,6 +1139,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
     });
 
+
     // ==========================================================
     // ADD REMINDER PANEL
     // ==========================================================
@@ -826,6 +1151,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+
     function closeReminderPanel() {
 
         if (addReminderPanel) {
@@ -836,6 +1162,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             reminderForm.reset();
         }
     }
+
 
     if (showAddReminder) {
         showAddReminder.addEventListener(
@@ -858,6 +1185,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
     }
 
+
     // ==========================================================
     // SAVE CUSTOM REMINDER
     // ==========================================================
@@ -866,7 +1194,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         reminderForm.addEventListener(
             "submit",
-            function (event) {
+            async function (event) {
 
                 event.preventDefault();
 
@@ -893,6 +1221,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         "reminderNotes"
                     ).value.trim();
 
+
                 if (!vehicleId) {
                     alert("Please select a vehicle.");
                     return;
@@ -903,31 +1232,47 @@ document.addEventListener("DOMContentLoaded", async function () {
                     return;
                 }
 
-                const reminders =
-                    getCustomReminders();
 
-                reminders.push({
-                    id: `custom-${Date.now()}`,
-                    vehicleId: vehicleId,
-                    name: name,
-                    dueDate: dueDate || "",
-                    dueMileage: dueMileage
-                        ? Number(dueMileage)
-                        : null,
-                    notes: notes,
-                    createdAt: new Date().toISOString()
-                });
+                try {
 
-                saveStorage(
-                    customStorageKey,
-                    reminders
-                );
+                    await apiRequest(
+                        "/api/reminders",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                vehicleId: vehicleId,
+                                name: name,
+                                dueDate: dueDate || null,
+                                dueMileage: dueMileage === ""
+                                    ? null
+                                    : Number(dueMileage),
+                                notes: notes || null
+                            })
+                        }
+                    );
 
-                closeReminderPanel();
-                renderReminders();
+                    closeReminderPanel();
+
+                    await refreshReminderData();
+
+                    renderReminders();
+
+                } catch (error) {
+
+                    console.error(
+                        "Could not create reminder:",
+                        error
+                    );
+
+                    alert(error.message);
+                }
             }
         );
     }
+
 
     // ==========================================================
     // VEHICLE CHANGE
@@ -949,6 +1294,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
     }
 
+
     // ==========================================================
     // INITIALIZE PAGE
     // ==========================================================
@@ -957,15 +1303,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         await loadReminderData();
 
+        // Import old localStorage records before displaying
+        // the reminders page.
+
+        await migrateLegacyReminders();
+
+        // Reload so the page uses the newly migrated records.
+
+        await loadReminderData();
+
         populateVehicleSelector();
 
         if (vehicles.length === 0) {
 
-            reminderList.innerHTML = `
-                <div class="empty-state-small">
-                    Add a vehicle before creating reminders.
-                </div>
-            `;
+            if (reminderList) {
+
+                reminderList.textContent =
+                    "Add a vehicle before creating reminders.";
+            }
 
             if (showAddReminder) {
                 showAddReminder.disabled = true;
@@ -987,11 +1342,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         if (reminderList) {
 
-            reminderList.innerHTML = `
-                <div class="empty-state-small">
-                    ${error.message}
-                </div>
-            `;
+            reminderList.replaceChildren();
+
+            const errorMessage =
+                document.createElement("div");
+
+            errorMessage.className =
+                "empty-state-small";
+
+            errorMessage.textContent =
+                error.message;
+
+            reminderList.appendChild(errorMessage);
         }
     }
 });

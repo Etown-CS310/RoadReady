@@ -1,3 +1,4 @@
+
 /*
  * Filename: /server/routes/register_vehicle.js
  *
@@ -19,8 +20,8 @@
  * Expected request body (JSON):
  * {
  *   "vehicle": { vin, nickname, make, model, model_year, trim, engine,
- *                transmission, body_type, current_mileage, image_url,
- *                estimated_value },
+ *               transmission, body_type, current_mileage, image_url,
+ *               estimated_value },
  *   "vehicle_maintenance_schedule": [
  *     { maintenance_type_id, due_mileage, due_date, status, notes }
  *   ]
@@ -47,6 +48,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 // Trim a value to a string, or null when blank.
 function cleanText(value, maxLength, label) {
+
     const text = String(value ?? "").trim();
 
     if (text === "") return null;
@@ -62,22 +64,32 @@ function cleanText(value, maxLength, label) {
 
 // Convert a value to an integer, or null when blank.
 function cleanInteger(value, label) {
-    if (value === null || value === undefined || String(value).trim() === "") {
+
+    if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
+    ) {
         return null;
     }
 
     const number = Number(String(value).replace(/,/g, "").trim());
 
-    if (!Number.isInteger(number)) {
+    if (!Number.isSafeInteger(number)) {
         throw new ValidationError(`${label} must be a whole number.`);
     }
 
     return number;
 }
 
+
+// --------------------------------------------------
+// VEHICLE VALIDATION
+// --------------------------------------------------
+
 function validateVehicle(input) {
 
-    if (!input || typeof input !== "object") {
+    if (!input || typeof input !== "object" || Array.isArray(input)) {
         throw new ValidationError("No vehicle was provided.");
     }
 
@@ -90,38 +102,83 @@ function validateVehicle(input) {
 
     const modelYear = cleanInteger(input.model_year, "Model year");
 
-    if (modelYear === null || modelYear < 1886 || modelYear > 2100) {
+    if (
+        modelYear === null ||
+        modelYear < 1886 ||
+        modelYear > 2100
+    ) {
         throw new ValidationError("Invalid model year.");
     }
 
-    // Mileage is NOT NULL with a default of 0.
-    const mileage = cleanInteger(input.current_mileage, "Mileage") ?? 0;
+
+    // ------------------------------------------
+    // CURRENT MILEAGE
+    // ------------------------------------------
+
+    // Mileage is required.
+    // Zero is allowed, but a missing value is not.
+    const mileage = cleanInteger(
+        input.current_mileage,
+        "Current mileage"
+    );
+
+    if (mileage === null) {
+        throw new ValidationError("Current mileage is required.");
+    }
 
     if (mileage < 0) {
-        throw new ValidationError("Invalid mileage.");
-    }
-
-    // VIN is optional but unique, so blank must be stored as NULL.
-    const vinText = cleanText(input.vin, 17, "VIN");
-    const vin = vinText ? vinText.toUpperCase() : null;
-
-    if (vin && !VIN_PATTERN.test(vin)) {
         throw new ValidationError(
-            "VIN must be 17 characters (letters I, O and Q are not allowed)."
+            "Current mileage must be zero or greater."
         );
     }
+
+
+    // ------------------------------------------
+    // VIN
+    // ------------------------------------------
+
+    // VIN is required and must contain exactly 17 valid characters.
+    const vinText = cleanText(input.vin, 17, "VIN");
+
+    if (!vinText) {
+        throw new ValidationError("VIN is required.");
+    }
+
+    const vin = vinText.toUpperCase();
+
+    if (!VIN_PATTERN.test(vin)) {
+        throw new ValidationError(
+            "VIN must contain exactly 17 characters. Letters I, O and Q are not allowed."
+        );
+    }
+
+
+    // ------------------------------------------
+    // IMAGE URL
+    // ------------------------------------------
 
     const imageUrl = cleanText(input.image_url, 500, "Image URL");
 
     if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
-        throw new ValidationError("Image URL must start with http:// or https://.");
+        throw new ValidationError(
+            "Image URL must start with http:// or https://."
+        );
     }
+
+
+    // ------------------------------------------
+    // ESTIMATED VALUE
+    // ------------------------------------------
 
     // decimal(10,2): at most 99,999,999.99
     let estimatedValue = null;
-    const valueText = String(input.estimated_value ?? "").replace(/,/g, "").trim();
+
+    const valueText = String(
+        input.estimated_value ?? ""
+    ).replace(/,/g, "").trim();
 
     if (valueText !== "") {
+
         estimatedValue = Number(valueText);
 
         if (
@@ -132,8 +189,14 @@ function validateVehicle(input) {
             throw new ValidationError("Invalid estimated value.");
         }
 
-        estimatedValue = Math.round(estimatedValue * 100) / 100;
+        estimatedValue =
+            Math.round(estimatedValue * 100) / 100;
     }
+
+
+    // ------------------------------------------
+    // RETURN CLEAN VEHICLE DATA
+    // ------------------------------------------
 
     return {
         vin,
@@ -150,6 +213,11 @@ function validateVehicle(input) {
         estimated_value: estimatedValue
     };
 }
+
+
+// --------------------------------------------------
+// MAINTENANCE SCHEDULE VALIDATION
+// --------------------------------------------------
 
 function validateScheduleItems(items) {
 
@@ -186,10 +254,16 @@ function validateScheduleItems(items) {
         );
 
         if (dueMileage !== null && dueMileage < 0) {
-            throw new ValidationError(`${row}: Invalid due mileage.`);
+            throw new ValidationError(
+                `${row}: Invalid due mileage.`
+            );
         }
 
-        const dueDate = cleanText(item.due_date, 10, `${row}: Due date`);
+        const dueDate = cleanText(
+            item.due_date,
+            10,
+            `${row}: Due date`
+        );
 
         if (
             dueDate &&
@@ -198,11 +272,14 @@ function validateScheduleItems(items) {
                 Number.isNaN(Date.parse(dueDate))
             )
         ) {
-            throw new ValidationError(`${row}: Invalid due date.`);
+            throw new ValidationError(
+                `${row}: Invalid due date.`
+            );
         }
 
         // Status is NOT NULL with a default of "good".
-        const status = cleanText(item.status, 20, `${row}: Status`) || "good";
+        const status =
+            cleanText(item.status, 20, `${row}: Status`) || "good";
 
         return {
             maintenance_type_id: maintenanceTypeId,
@@ -228,18 +305,28 @@ router.post("/", requireLogin, async (req, res) => {
     try {
 
         // Validate everything before touching the database.
-        const vehicle = validateVehicle(req.body && req.body.vehicle);
+        const vehicle = validateVehicle(
+            req.body && req.body.vehicle
+        );
 
         const scheduleItems = validateScheduleItems(
             req.body && req.body.vehicle_maintenance_schedule
         );
 
-        // Start database transaction.
+
+        // ------------------------------------------
+        // START DATABASE TRANSACTION
+        // ------------------------------------------
+
         connection = await db.getConnection();
 
         await connection.beginTransaction();
 
-        // Insert vehicle into vehicles table.
+
+        // ------------------------------------------
+        // INSERT VEHICLE
+        // ------------------------------------------
+
         const [result] = await connection.query(
             `
             INSERT INTO vehicles (
@@ -276,7 +363,11 @@ router.post("/", requireLogin, async (req, res) => {
 
         const vehicleId = result.insertId;
 
-        // Associate vehicle with logged-in user.
+
+        // ------------------------------------------
+        // ASSOCIATE VEHICLE WITH USER
+        // ------------------------------------------
+
         await connection.query(
             `
             INSERT INTO user_vehicles (
@@ -293,7 +384,11 @@ router.post("/", requireLogin, async (req, res) => {
             ]
         );
 
-        // Insert optional maintenance schedule items.
+
+        // ------------------------------------------
+        // INSERT MAINTENANCE SCHEDULE ITEMS
+        // ------------------------------------------
+
         for (const item of scheduleItems) {
 
             await connection.query(
@@ -319,7 +414,11 @@ router.post("/", requireLogin, async (req, res) => {
             );
         }
 
-        // Save all inserts together.
+
+        // ------------------------------------------
+        // COMMIT TRANSACTION
+        // ------------------------------------------
+
         await connection.commit();
 
         res.status(201).json({
@@ -334,7 +433,10 @@ router.post("/", requireLogin, async (req, res) => {
             try {
                 await connection.rollback();
             } catch (rollbackError) {
-                console.error("Register vehicle rollback error:", rollbackError);
+                console.error(
+                    "Register vehicle rollback error:",
+                    rollbackError
+                );
             }
         }
 
@@ -342,16 +444,23 @@ router.post("/", requireLogin, async (req, res) => {
         let message = "Could not register vehicle.";
 
         if (error instanceof ValidationError) {
+
             status = 400;
             message = error.message;
+
         } else if (error.code === "ER_DUP_ENTRY") {
+
             status = 409;
             message = "A vehicle with that VIN already exists.";
+
         } else if (error.code === "ER_NO_REFERENCED_ROW_2") {
+
             // Foreign key failure, e.g. unknown maintenance_type_id.
             status = 400;
             message = "One of the maintenance types does not exist.";
+
         } else {
+
             console.error("Register vehicle error:", error);
         }
 

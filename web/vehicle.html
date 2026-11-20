@@ -50,20 +50,28 @@
 
             <!-- Topbar -->
             <div id="vehicle-topbar"></div>
+            
+            <!-- Vehicle Actions -->
+            <div class="vehicle-actions">
+                <div class="vehicle-actions-heading">
+                    <h2>Manage Vehicles</h2>
+                    <p>Add a vehicle manually or import your vehicle information.</p>
+                </div>
 
-            <!-- Import CSV -->
-            <div id="import_csv">
-                <button id="import">
-                    Import Vehicle CSV Data
-                </button>
+                <div class="vehicle-action-buttons">
+                    <button id="import" class="button button-secondary">
+                        <i class="fa-solid fa-file-import"></i>
+                        Import Vehicle CSV
+                    </button>
 
-                <input type="file" id="csv-input" style="display: none;">
+                    <input type="file" id="csv-input" accept=".csv" style="display: none;">
+
+                    <button id="register-vehicle-button" class="button">
+                        <i class="fa-solid fa-plus"></i>
+                        Register New Vehicle
+                    </button>
+                </div>
             </div>
-
-            <!-- Vehicle Registration Form -->
-            <button id="register-vehicle-button" class="btn btn-primary">
-                Register New Vehicle
-            </button>
 
             <!-- Vehicle List -->
             <div class="vehicle-list" id="vehicle-list"></div>

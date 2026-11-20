@@ -1,3 +1,4 @@
+
 <!--
  * Filename: /web/maintenance.html
  *
@@ -38,6 +39,31 @@
     <!-- RoadReady Styles -->
     <link rel="stylesheet" href="/client/css/styles.css">
     <link rel="icon" href="data:,">
+
+    <!-- Form requirement indicators -->
+    <style>
+        .field-required,
+        .field-optional {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .field-required {
+            background-color: #fce8e8;
+            color: #b42318;
+        }
+
+        .field-optional {
+            background-color: #eeeeee;
+            color: #666666;
+        }
+    </style>
 </head>
 
 <body>
@@ -82,6 +108,7 @@
 
                     <label for="maintenanceType">
                         Maintenance Type
+                        <span class="field-required">Required *</span>
                     </label>
 
                     <select id="maintenanceType" required>
@@ -101,6 +128,7 @@
 
                         <label for="customMaintenanceType">
                             Custom Maintenance Type
+                            <span class="field-required">Required *</span>
                         </label>
 
                         <input
@@ -112,20 +140,35 @@
 
                     </div>
 
-                    <label for="dueMileage">Due Mileage</label>
+                    <label for="dueMileage">
+                        Due Mileage
+                        <span class="field-required">Required *</span>
+                    </label>
 
                     <input
                         type="number"
                         id="dueMileage"
                         min="0"
+                        step="1"
                         placeholder="e.g. 145000"
+                        required
                     >
 
-                    <label for="dueDate">Due Date</label>
+                    <label for="dueDate">
+                        Due Date
+                        <span class="field-required">Required *</span>
+                    </label>
 
-                    <input type="date" id="dueDate">
+                    <input
+                        type="date"
+                        id="dueDate"
+                        required
+                    >
 
-                    <label for="notes">Notes</label>
+                    <label for="notes">
+                        Notes
+                        <span class="field-optional">Optional</span>
+                    </label>
 
                     <textarea
                         id="notes"
@@ -165,5 +208,4 @@
     <script src="/client/js/auth/auth-guard.js"></script>
 
 </body>
-
 </html>

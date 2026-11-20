@@ -17,9 +17,21 @@
                 <legend>Identification</legend>
                 <div class="grid">
                     <div>
-                    <label for="vin">VIN <span class="hint">(17 characters, unique)</span></label>
-                    <input id="vin" class="vin-input" name="vin" maxlength="17" minlength="17" pattern="[A-HJ-NPR-Za-hj-npr-z0-9]{17}"
-                            title="17 characters; letters I, O and Q are not used in VINs" autocapitalize="characters">
+                        <label for="vin" class="req">
+                            VIN <span class="hint">(17 characters, unique)</span>
+                        </label>
+                        <input
+                            id="vin"
+                            class="vin-input"
+                            name="vin"
+                            type="text"
+                            maxlength="17"
+                            minlength="17"
+                            pattern="[A-HJ-NPR-Za-hj-npr-z0-9]{17}"
+                            title="VIN must contain exactly 17 characters. Letters I, O and Q are not allowed."
+                            autocapitalize="characters"
+                            required
+                        >
                     </div>
                     <div>
                     <label for="nickname">Nickname</label>
@@ -73,8 +85,16 @@
                 <legend>Condition &amp; Value</legend>
                 <div class="grid">
                     <div>
-                    <label for="current_mileage" class="req">Current mileage</label>
-                    <input id="current_mileage" name="current_mileage" type="number" min="0" step="1" value="0" required>
+                        <label for="current_mileage" class="req">Current mileage</label>
+                        <input
+                            id="current_mileage"
+                            name="current_mileage"
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="Enter current mileage"
+                            required
+                        >
                     </div>
                     <div>
                     <label for="estimated_value">Estimated value ($)</label>

@@ -44,6 +44,7 @@ const maintenanceRoutes = require("./routes/maintenance");
 const maintenanceGuideRoutes = require("./routes/maintenance-guide");
 const vehicleRoutes = require("./routes/vehicle");
 const registerVehicleRoutes = require("./routes/register_vehicle");
+const remindersRoutes = require("./routes/reminders");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -84,6 +85,7 @@ app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/maintenance-guide", maintenanceGuideRoutes);
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/register_vehicle", registerVehicleRoutes);
+app.use("/api/reminders", remindersRoutes);
 
 // --------------------------------------------------
 // PROTECTED DASHBOARD
