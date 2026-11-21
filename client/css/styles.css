@@ -1541,3 +1541,21 @@ body.dark-mode #vehicleForm .reset {
         width: 100%;
     }
 }
+
+/* Dashboard Dark Mode */
+body.dark-mode .stat-card,
+body.dark-mode .panel,
+body.dark-mode .value-card {
+    background-color: #222635;
+    color: #F1F3F9;
+    border-color: #454C60;
+}
+
+body.dark-mode .stat-label,
+body.dark-mode .stat-sub {
+    color: #C0C6D4;
+}
+
+body.dark-mode .maintenance-item {
+    border-color: #454C60;
+}
