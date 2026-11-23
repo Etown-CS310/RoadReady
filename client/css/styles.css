@@ -1559,3 +1559,118 @@ body.dark-mode .stat-sub {
 body.dark-mode .maintenance-item {
     border-color: #454C60;
 }
+
+
+/* =========================================
+   DASHBOARD DARK MODE FIXES
+========================================= */
+
+/* Top-right user profile */
+body.dark-mode .profile {
+    background-color: #222635;
+    color: #F1F3F9;
+    border-color: #454C60;
+}
+
+body.dark-mode #dashboard-user {
+    color: #F1F3F9;
+}
+
+/* Main vehicle information card */
+body.dark-mode .vehicle-card {
+    background-color: #222635;
+    color: #F1F3F9;
+    border-color: #454C60;
+}
+
+body.dark-mode .vehicle-info h2 {
+    color: #F1F3F9;
+}
+
+body.dark-mode .vehicle-info p {
+    color: #C0C6D4;
+}
+
+/* Vehicle mileage badge */
+body.dark-mode .mileage {
+    background-color: #253657;
+    color: #A9C7FF;
+}
+
+/* Vehicle photo carousel */
+body.dark-mode .vehicle-carousel {
+    background-color: #202535;
+    border: 1px solid #454C60;
+}
+
+body.dark-mode .car-image {
+    background-color: #202535;
+    color: #C0C6D4;
+}
+
+/* Carousel navigation buttons */
+body.dark-mode .vehicle-carousel button,
+body.dark-mode #previousButton,
+body.dark-mode #nextButton {
+    color: #F1F3F9;
+}
+
+body.dark-mode .vehicle-carousel button.btn-light {
+    background-color: #3A4053;
+    border-color: #626B80;
+    color: #F1F3F9;
+}
+
+body.dark-mode .vehicle-carousel button:hover {
+    background-color: #4A5269;
+}
+
+/* Carousel photo counter */
+body.dark-mode #photoNumber {
+    background-color: rgba(20, 24, 36, 0.9);
+    color: #FFFFFF;
+}
+
+/* Vehicle photo upload button */
+body.dark-mode .upload-button {
+    background-color: #3157A4;
+    color: #FFFFFF;
+}
+
+/* Estimated vehicle value */
+body.dark-mode .value-card,
+body.dark-mode #value-card {
+    background-color: #222635;
+    color: #F1F3F9;
+    border-color: #454C60;
+}
+
+body.dark-mode .value-label,
+body.dark-mode #value-card .text-muted,
+body.dark-mode .value-range {
+    color: #C0C6D4 !important;
+}
+
+body.dark-mode .value-amount,
+body.dark-mode #value-card strong {
+    color: #F1F3F9 !important;
+}
+
+/* General dashboard text */
+body.dark-mode .vehicle-card strong,
+body.dark-mode .vehicle-card span {
+    color: #F1F3F9;
+}
+
+/* Dashboard theme toggle spacing */
+#theme-toggle {
+    display: inline-block;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
+}
