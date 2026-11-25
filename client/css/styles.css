@@ -1674,3 +1674,256 @@ body.dark-mode .vehicle-card span {
     transform: translateY(-2px);
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
 }
+
+
+/* =========================================
+   ROADREADY VEHICLE PHOTO GALLERY
+========================================= */
+
+.vehicle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.vehicle-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.car-image {
+    width: min(100%, 540px);
+    height: auto;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+}
+
+.vehicle-carousel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    height: auto;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #e9eef5;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+}
+
+.vehicle-carousel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.vehicle-photo-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: #64748b;
+    font-size: 15px;
+    text-align: center;
+    background:
+        linear-gradient(135deg, #eef2f7, #dfe7f1);
+}
+
+.vehicle-carousel button {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.68);
+    color: #fff;
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.vehicle-carousel button:hover:not(:disabled) {
+    background: rgba(15, 23, 42, 0.9);
+    transform: translateY(-50%) scale(1.06);
+}
+
+.vehicle-carousel button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+#previousButton {
+    left: 14px;
+}
+
+#nextButton {
+    right: 14px;
+}
+
+#photoNumber {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    z-index: 2;
+    transform: translateX(-50%);
+    padding: 6px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    background: rgba(15, 23, 42, 0.72);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.upload-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    gap: 8px;
+    width: auto;
+    margin: 0;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #3157a4;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.upload-button:hover {
+    background: #24478e;
+    transform: translateY(-1px);
+}
+
+.upload-button input {
+    display: none;
+}
+
+.upload-button.uploading {
+    opacity: 0.65;
+    pointer-events: none;
+    cursor: wait;
+}
+
+.upload-button.uploading::after {
+    content: "Uploading...";
+    margin-left: 5px;
+}
+
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+body.dark-mode .vehicle-carousel {
+    border-color: #454c60;
+    background: #202535;
+}
+
+body.dark-mode .vehicle-photo-empty {
+    background: linear-gradient(135deg, #292e40, #202535);
+    color: #c0c6d4;
+}
+
+body.dark-mode .vehicle-carousel button {
+    background: rgba(35, 42, 60, 0.88);
+    color: #fff;
+}
+
+body.dark-mode .vehicle-carousel button:hover:not(:disabled) {
+    background: rgba(65, 76, 103, 0.95);
+}
+
+body.dark-mode #photoNumber {
+    background: rgba(20, 24, 36, 0.9);
+    color: #fff;
+}
+
+body.dark-mode .upload-button {
+    background: #3157a4;
+    color: #fff;
+}
+
+body.dark-mode .upload-button:hover {
+    background: #4169b5;
+}
+
+
+/* =========================================
+   RESPONSIVE LAYOUT
+========================================= */
+
+@media (max-width: 850px) {
+
+    .vehicle-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .car-image {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .vehicle-carousel {
+        aspect-ratio: 4 / 3;
+        border-radius: 14px;
+    }
+
+    .vehicle-carousel button {
+        width: 38px;
+        height: 38px;
+        font-size: 25px;
+    }
+
+    #previousButton {
+        left: 10px;
+    }
+
+    #nextButton {
+        right: 10px;
+    }
+
+    #photoNumber {
+        bottom: 10px;
+        font-size: 12px;
+    }
+
+    .upload-button {
+        width: 100%;
+    }
+}

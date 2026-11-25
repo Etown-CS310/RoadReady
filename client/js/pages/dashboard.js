@@ -1,3 +1,4 @@
+
 /*
  * Filename: /client/js/pages/dashboard.js
  *
@@ -7,6 +8,8 @@
  * - Request dashboard data from the server API.
  * - Display the authenticated user's information.
  * - Display the user's vehicle information.
+ * - Load and control the vehicle photo gallery.
+ * - Upload additional vehicle photos.
  * - Display upcoming maintenance.
  * - Display maintenance history.
  * - Display vehicle maintenance status.
@@ -18,15 +21,306 @@
  * - Contain SQL queries.
  *
  * Dashboard data is provided by /server/routes/dashboard.js.
+ * Vehicle photos are provided by /server/routes/vehicle-photos.js.
  */
 
-// Format a "YYYY-MM-DD" string as a local date (avoids UTC off-by-one-day).
+
+// --------------------------------------------------
+// DATE FORMATTING
+// --------------------------------------------------
+
 function localDate(value) {
-    const date = new Date(String(value).slice(0, 10) + "T00:00:00");
+
+    const date = new Date(
+        String(value).slice(0, 10) + "T00:00:00"
+    );
+
     return Number.isNaN(date.getTime())
         ? String(value)
         : date.toLocaleDateString();
 }
+
+
+// --------------------------------------------------
+// VEHICLE PHOTO GALLERY
+// --------------------------------------------------
+
+function initializeVehicleGallery(vehicle) {
+
+    const carousel = document.querySelector(".vehicle-carousel");
+    const vehiclePhoto = document.getElementById("vehiclePhoto");
+    const previousButton = document.getElementById("previousButton");
+    const nextButton = document.getElementById("nextButton");
+    const photoNumber = document.getElementById("photoNumber");
+    const uploadInput = document.getElementById("vehicleUpload");
+    const uploadButton = document.querySelector(".upload-button");
+
+    if (!carousel || !vehiclePhoto) {
+        return;
+    }
+
+    let photos = [];
+    let currentPhotoIndex = 0;
+    let uploading = false;
+
+    // Create the empty-gallery placeholder if it does not exist.
+    let emptyState = carousel.querySelector(".vehicle-photo-empty");
+
+    if (!emptyState) {
+
+        emptyState = document.createElement("div");
+
+        emptyState.className = "vehicle-photo-empty";
+
+        emptyState.textContent = "No vehicle photos yet";
+
+        carousel.appendChild(emptyState);
+    }
+
+
+    // --------------------------------------------------
+    // RENDER CURRENT PHOTO
+    // --------------------------------------------------
+
+    function renderPhoto() {
+
+        const hasPhotos = photos.length > 0;
+
+        if (!hasPhotos) {
+
+            vehiclePhoto.removeAttribute("src");
+            vehiclePhoto.style.display = "none";
+
+            emptyState.style.display = "flex";
+
+            if (photoNumber) {
+                photoNumber.textContent = "0 / 0";
+            }
+
+            if (previousButton) {
+                previousButton.disabled = true;
+            }
+
+            if (nextButton) {
+                nextButton.disabled = true;
+            }
+
+            return;
+        }
+
+        const photo = photos[currentPhotoIndex];
+
+        vehiclePhoto.style.display = "block";
+        emptyState.style.display = "none";
+
+        vehiclePhoto.alt =
+            `${vehicle.make} ${vehicle.model} photo ${currentPhotoIndex + 1}`;
+
+        vehiclePhoto.onerror = () => {
+            vehiclePhoto.style.display = "none";
+            emptyState.textContent = "This photo could not be loaded.";
+            emptyState.style.display = "flex";
+        };
+
+        vehiclePhoto.src = photo.image_url;
+
+        if (photoNumber) {
+
+            photoNumber.textContent =
+                `${currentPhotoIndex + 1} / ${photos.length}`;
+        }
+
+        const multiplePhotos = photos.length > 1;
+
+        if (previousButton) {
+            previousButton.disabled = !multiplePhotos;
+        }
+
+        if (nextButton) {
+            nextButton.disabled = !multiplePhotos;
+        }
+    }
+
+
+    // --------------------------------------------------
+    // LOAD PHOTOS FROM SERVER
+    // --------------------------------------------------
+
+    async function loadPhotos() {
+
+        try {
+
+            const response = await fetch(
+                `/api/vehicle-photos/${vehicle.id}`,
+                {
+                    credentials: "include"
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.message || "Could not load vehicle photos."
+                );
+            }
+
+            photos = Array.isArray(data.photos)
+                ? data.photos
+                : [];
+
+            currentPhotoIndex = 0;
+
+            renderPhoto();
+
+        } catch (error) {
+
+            console.error("Vehicle gallery error:", error);
+
+            photos = [];
+
+            emptyState.textContent =
+                "Could not load vehicle photos.";
+
+            renderPhoto();
+        }
+    }
+
+
+    // --------------------------------------------------
+    // PREVIOUS PHOTO
+    // --------------------------------------------------
+
+    if (previousButton) {
+
+        previousButton.addEventListener("click", () => {
+
+            if (photos.length <= 1) {
+                return;
+            }
+
+            currentPhotoIndex =
+                (currentPhotoIndex - 1 + photos.length) % photos.length;
+
+            renderPhoto();
+        });
+    }
+
+
+    // --------------------------------------------------
+    // NEXT PHOTO
+    // --------------------------------------------------
+
+    if (nextButton) {
+
+        nextButton.addEventListener("click", () => {
+
+            if (photos.length <= 1) {
+                return;
+            }
+
+            currentPhotoIndex =
+                (currentPhotoIndex + 1) % photos.length;
+
+            renderPhoto();
+        });
+    }
+
+
+    // --------------------------------------------------
+    // UPLOAD PHOTOS
+    // --------------------------------------------------
+
+    if (uploadInput) {
+
+        uploadInput.addEventListener("change", async () => {
+
+            const selectedFiles = Array.from(uploadInput.files || []);
+
+            if (selectedFiles.length === 0 || uploading) {
+                return;
+            }
+
+            if (selectedFiles.length > 10) {
+
+                alert("You can upload a maximum of 10 photos at once.");
+
+                uploadInput.value = "";
+
+                return;
+            }
+
+            const formData = new FormData();
+
+            selectedFiles.forEach(file => {
+                formData.append("photos", file);
+            });
+
+            uploading = true;
+
+            if (uploadButton) {
+
+                uploadButton.classList.add("uploading");
+                uploadButton.setAttribute("aria-busy", "true");
+            }
+
+            try {
+
+                const response = await fetch(
+                    `/api/vehicle-photos/${vehicle.id}`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        body: formData
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+
+                    throw new Error(
+                        data.message || "Could not upload vehicle photos."
+                    );
+                }
+
+                // Reload the complete gallery so the new images
+                // appear in the same order used by the server.
+                await loadPhotos();
+
+                alert("Vehicle photos uploaded successfully.");
+
+            } catch (error) {
+
+                console.error("Vehicle photo upload error:", error);
+
+                alert(error.message || "Could not upload vehicle photos.");
+
+            } finally {
+
+                uploading = false;
+
+                if (uploadButton) {
+
+                    uploadButton.classList.remove("uploading");
+                    uploadButton.removeAttribute("aria-busy");
+                }
+
+                uploadInput.value = "";
+            }
+        });
+    }
+
+
+    // Initial gallery load.
+    loadPhotos();
+}
+
+
+// --------------------------------------------------
+// DASHBOARD
+// --------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -36,16 +330,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             credentials: "include"
         });
 
-
         if (!response.ok) {
             throw new Error("Could not load dashboard data.");
         }
 
-
         const data = await response.json();
 
-
         if (!data.success) {
+
             throw new Error(
                 data.message || "Could not load dashboard data."
             );
@@ -73,12 +365,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!data.vehicle) {
 
             console.log("No vehicle found for this user.");
+
+            initializeVehicleGallery({
+                id: null,
+                make: "",
+                model: ""
+            });
+
             return;
         }
 
-
         const vehicle = data.vehicle;
-
 
         const vehicleName =
             document.getElementById("dashboard-vehicle-name");
@@ -97,13 +394,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `${vehicle.model_year} ${vehicle.make} ${vehicle.model}`;
         }
 
-
         if (vehicleDetails) {
 
             vehicleDetails.textContent =
                 `${vehicle.model_year} ${vehicle.make} ${vehicle.model}`;
         }
-
 
         if (mileage) {
 
@@ -113,16 +408,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
         // --------------------------------------------------
-        // VEHICLE IMAGE
+        // VEHICLE PHOTO GALLERY
         // --------------------------------------------------
 
-        const vehiclePhoto =
-            document.getElementById("vehiclePhoto");
-
-        if (vehiclePhoto && vehicle.image_url) {
-
-            vehiclePhoto.src = vehicle.image_url;
-        }
+        initializeVehicleGallery(vehicle);
 
 
         // --------------------------------------------------
@@ -137,9 +426,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (valueAmount) {
 
-            // Not awaited, so a slow valuation never blocks the rest of
-            // the dashboard from rendering.
+            // Not awaited, so a slow valuation never blocks
+            // the rest of the dashboard from rendering.
             getVehicleValue(vehicle.id)
+
                 .then(valueData => {
 
                     if (!valueData) {
@@ -158,10 +448,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                         formatMoney(valueData.value);
 
                     if (valueRange) {
+
                         valueRange.textContent =
                             `${formatMoney(valueData.low)} – ${formatMoney(valueData.high)} • ${valueData.source}`;
                     }
                 })
+
                 .catch(valueError => {
 
                     console.error("Vehicle value error:", valueError);
@@ -186,7 +478,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const nextServiceSub =
             document.getElementById("next-service-sub");
 
-
         if (
             nextServiceNumber &&
             data.nextService &&
@@ -199,8 +490,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             nextServiceNumber.textContent =
                 dueMileage.toLocaleString();
 
-            nextServiceSub.textContent =
-                "miles";
+            if (nextServiceSub) {
+                nextServiceSub.textContent = "miles";
+            }
         }
 
 
@@ -209,32 +501,33 @@ document.addEventListener("DOMContentLoaded", async () => {
         // --------------------------------------------------
 
         const maintenanceYearNumber =
-        document.getElementById("maintenance-year-number");
+            document.getElementById("maintenance-year-number");
 
         const maintenanceYearSub =
-        maintenanceYearNumber.parentElement.querySelector(".stat-sub");
-
+            maintenanceYearNumber
+                ? maintenanceYearNumber.parentElement.querySelector(".stat-sub")
+                : null;
 
         if (maintenanceYearNumber) {
 
             const servicesCompleted =
-            Number(data.maintenanceThisYear.services_completed || 0);
+                Number(data.maintenanceThisYear?.services_completed || 0);
 
             const totalCost =
-            Number(data.maintenanceThisYear.total_cost_cents || 0) / 100;
+                Number(data.maintenanceThisYear?.total_cost_cents || 0) / 100;
 
             maintenanceYearNumber.textContent =
-            servicesCompleted.toLocaleString();
+                servicesCompleted.toLocaleString();
 
             if (maintenanceYearSub) {
 
                 maintenanceYearSub.textContent =
                     `${servicesCompleted === 1 ? "Service" : "Services"} completed • $${totalCost.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-            })} spent`;
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })} spent`;
             }
-        }  
+        }
 
 
         // --------------------------------------------------
@@ -245,7 +538,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.querySelector(
                 ".stat-card:nth-child(3) .stat-number"
             );
-
 
         if (statusElement) {
 
@@ -263,15 +555,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         // --------------------------------------------------
 
         const maintenanceList =
-            document.getElementById(
-                "dashboard-maintenance-list"
-            );
-
+            document.getElementById("dashboard-maintenance-list");
 
         if (maintenanceList) {
 
             maintenanceList.innerHTML = "";
-
 
             if (
                 !data.upcomingMaintenance ||
@@ -291,13 +579,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const element =
                         document.createElement("div");
 
-                    element.className =
-                        "maintenance-item";
+                    element.className = "maintenance-item";
 
                     const title = document.createElement("strong");
                     title.textContent = item.maintenance_name;
 
                     const detail = document.createElement("span");
+
                     detail.textContent =
                         item.due_mileage
                             ? `Due at ${Number(item.due_mileage).toLocaleString()} miles`
@@ -319,15 +607,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         // --------------------------------------------------
 
         const history =
-            document.getElementById(
-                "dashboard-history"
-            );
-
+            document.getElementById("dashboard-history");
 
         if (history) {
 
             history.innerHTML = "";
-
 
             if (
                 !data.history ||
@@ -347,13 +631,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const element =
                         document.createElement("div");
 
-                    element.className =
-                        "maintenance-item";
+                    element.className = "maintenance-item";
 
                     const title = document.createElement("strong");
                     title.textContent = item.maintenance_name;
 
                     const detail = document.createElement("span");
+
                     detail.textContent =
                         localDate(item.service_date) +
                         (
@@ -369,7 +653,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
             }
         }
-
 
     } catch (error) {
 

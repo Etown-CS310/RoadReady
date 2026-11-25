@@ -45,6 +45,7 @@ const maintenanceGuideRoutes = require("./routes/maintenance-guide");
 const vehicleRoutes = require("./routes/vehicle");
 const registerVehicleRoutes = require("./routes/register_vehicle");
 const remindersRoutes = require("./routes/reminders");
+const vehiclePhotoRoutes = require("./routes/vehicle-photos");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -86,6 +87,7 @@ app.use("/api/maintenance-guide", maintenanceGuideRoutes);
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/register_vehicle", registerVehicleRoutes);
 app.use("/api/reminders", remindersRoutes);
+app.use("/api/vehicle-photos", vehiclePhotoRoutes);
 
 // --------------------------------------------------
 // PROTECTED DASHBOARD
@@ -98,6 +100,12 @@ app.get("/dashboard.html", requirePageLogin, (req, res) => {
         path.join(__dirname, "..", "web", "dashboard.html")
     );
 });
+
+// Serve uploaded vehicle photos.
+app.use(
+    "/uploads",
+    express.static(path.join(__dirname, "uploads"))
+);
 
 
 // --------------------------------------------------
