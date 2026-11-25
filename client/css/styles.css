@@ -1,3 +1,4 @@
+
 /*
  * Filename: /client/css/styles.css
  *
@@ -15,913 +16,854 @@
  * - Communicate with the server or database.
  * - Load application data.
  */
- 
+
+
+/* =========================================
+   GLOBAL STYLES
+========================================= */
+
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f4f6f8;
-  color: #17202a;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+    color: #17202a;
 }
 
+
+/* =========================================
+   NAVIGATION AND PAGE LAYOUT
+========================================= */
+
 .sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 230px;
-  height: 100vh;
-  background: #111827;
-  color: white;
-  padding: 28px 18px;
-  display: flex;
-  flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    width: 230px;
+    height: 100vh;
+    padding: 28px 18px;
+    background: #111827;
+    color: white;
 }
 
 .logo {
-  font-size: 23px;
-  font-weight: bold;
-  margin-bottom: 40px;
-  padding-left: 10px;
+    margin-bottom: 40px;
+    padding-left: 10px;
+    font-size: 23px;
+    font-weight: bold;
 }
 
 .logo span,
 .auth-logo span {
-  color: #3b82f6;
+    color: #3b82f6;
 }
 
 .main-nav {
-  flex: 1;
+    flex: 1;
 }
 
 .nav-item {
-  display: block;
-  padding: 13px 14px;
-  margin-bottom: 6px;
-  border-radius: 8px;
-  color: #cbd5e1;
-  text-decoration: none;
-  font-size: 14px;
+    display: block;
+    margin-bottom: 6px;
+    padding: 13px 14px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
 }
 
 .nav-item:hover,
 .nav-item.active {
-  background: #1f2937;
-  color: white;
+    background: #1f2937;
+    color: white;
 }
 
 .nav-icon {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .sidebar-user {
-  color: #cbd5e1;
-  font-size: 13px;
-  padding: 12px 14px;
-  margin-bottom: 6px;
+    margin-bottom: 6px;
+    padding: 12px 14px;
+    color: #cbd5e1;
+    font-size: 13px;
 }
 
 .logout-link {
-  color: #cbd5e1;
+    color: #cbd5e1;
 }
 
 .main {
-  margin-left: 230px;
-  padding: 35px 45px;
-  min-height: 100vh;
+    min-height: 100vh;
+    margin-left: 230px;
+    padding: 35px 45px;
 }
 
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
 .topbar h1 {
-  font-size: 28px;
+    font-size: 28px;
 }
 
 .topbar p {
-  color: #6b7280;
-  margin-top: 5px;
-  font-size: 14px;
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 14px;
 }
 
 .profile {
-  background: white;
-  padding: 10px 15px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  font-size: 14px;
-}
-
-.vehicle-card {
-  background: white;
-  border-radius: 14px;
-  padding: 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid #e5e7eb;
-  margin-bottom: 20px;
-}
-
-.vehicle-info h2 {
-  font-size: 22px;
-  margin-bottom: 8px;
-}
-
-.vehicle-info p {
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 18px;
-}
-
-.mileage {
-  display: inline-block;
-  background: #eff6ff;
-  color: #2563eb;
-  padding: 9px 13px;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.car-image {
-  width: 500px;
-  height: 500px;
-  background: #eef1f4;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  font-size: 14px;
-  overflow: hidden;
-}
-
-.car-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 25px;
-}
-
-.stat-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-}
-
-.stat-label {
-  color: #6b7280;
-  font-size: 13px;
-  margin-bottom: 10px;
-}
-
-.stat-number {
-  font-size: 25px;
-  font-weight: bold;
-}
-
-.stat-sub {
-  color: #6b7280;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 22px;
-}
-
-.panel {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  padding: 22px;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.panel-header h2 {
-  font-size: 17px;
-}
-
-.view-link {
-  font-size: 12px;
-  color: #2563eb;
-  text-decoration: none;
-}
-
-.maintenance-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid #edf0f2;
-  gap: 15px;
-}
-
-.maintenance-item:last-child {
-  border-bottom: none;
-}
-
-.service-name {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.service-detail {
-  color: #6b7280;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.status {
-  padding: 6px 9px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.soon {
-  background: #fff7ed;
-  color: #c2410c;
-}
-
-.good {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.overdue {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
-.completed {
-  background: #f3f4f6;
-  color: #4b5563;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  text-align: left;
-  color: #6b7280;
-  font-size: 11px;
-  padding-bottom: 12px;
-  text-transform: uppercase;
-}
-
-td {
-  padding: 13px 5px;
-  border-top: 1px solid #edf0f2;
-  font-size: 13px;
-  vertical-align: top;
-}
-
-.table-scroll {
-  overflow-x: auto;
-}
-
-.button {
-  display: inline-block;
-  border: none;
-  background: #2563eb;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 7px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.button:hover {
-  background: #1d4ed8;
-}
-
-.vehicle-selector {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.vehicle-selector label {
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.vehicle-selector select,
-.form-grid select,
-.form-grid input,
-.form-grid textarea {
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-  background: white;
-  padding: 10px 11px;
-  font: inherit;
-}
-
-.form-grid {
-  display: grid;
-  gap: 9px;
-}
-
-.form-grid label {
-  font-size: 13px;
-  font-weight: bold;
-  margin-top: 7px;
-}
-
-.form-grid button {
-  margin-top: 8px;
-}
-
-.alert {
-  padding: 12px 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 13px;
-}
-
-.alert.success {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-}
-
-.alert.error {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-
-.empty-state,
-.empty-state-small {
-  color: #6b7280;
-}
-
-.empty-state h2 {
-  color: #17202a;
-  margin-bottom: 8px;
-}
-
-.empty-state-small {
-  padding: 10px 0;
-  font-size: 13px;
-}
-
-.vehicle-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-  margin-bottom: 22px;
-}
-
-.vehicle-list-card {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 17px;
-  text-decoration: none;
-  color: #17202a;
-}
-
-.vehicle-list-card:hover,
-.vehicle-list-card.selected {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 1px #2563eb;
-}
-
-.vehicle-list-card span,
-.vehicle-list-card small {
-  color: #6b7280;
-  font-size: 12px;
-}
-
-.vehicle-detail-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 25px;
-}
-
-.vehicle-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.vehicle-detail-header h2 {
-  font-size: 24px;
-}
-
-.vehicle-nickname {
-  color: #6b7280;
-  margin-top: 5px;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-}
-
-.detail-grid div {
-  border-top: 1px solid #edf0f2;
-  padding-top: 12px;
-}
-
-.detail-grid span {
-  display: block;
-  color: #6b7280;
-  font-size: 11px;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.detail-grid strong {
-  font-size: 14px;
-  word-break: break-word;
-}
-
-.guide-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 22px;
-}
-
-.guide-sidebar h2 {
-  font-size: 17px;
-  margin-bottom: 14px;
-}
-
-.guide-link {
-  display: block;
-  padding: 11px 12px;
-  border-radius: 7px;
-  text-decoration: none;
-  color: #374151;
-  font-size: 13px;
-  margin-bottom: 5px;
-}
-
-.guide-link:hover,
-.guide-link.selected {
-  background: #eff6ff;
-  color: #2563eb;
-  font-weight: bold;
-}
-
-.guide-category {
-  color: #2563eb;
-  font-size: 12px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.guide-article h2 {
-  font-size: 25px;
-  margin-top: 8px;
-  margin-bottom: 10px;
-}
-
-.guide-summary {
-  color: #6b7280;
-  font-size: 15px;
-  line-height: 1.6;
-  margin-bottom: 22px;
-}
-
-.guide-body {
-  line-height: 1.7;
-  white-space: normal;
-}
-
-.risk-box {
-  margin-top: 25px;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 9px;
-  padding: 17px;
-}
-
-.risk-box h3 {
-  font-size: 14px;
-  margin-bottom: 7px;
-  color: #9a3412;
-}
-
-.risk-box p {
-  font-size: 13px;
-  line-height: 1.6;
-  color: #7c2d12;
+    padding: 10px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
 }
 
 .site-footer {
-    text-align: center;
+    width: 100%;
+    margin-top: 20px;
     padding: 20px;
     color: #666;
+    text-align: center;
     font-size: 14px;
-    width: 100%;
 }
 
 .site-footer p {
     margin: 0;
 }
 
-/* ---------- LOGIN ---------- */
 
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f4f6f8;
+/* =========================================
+   SHARED CARDS AND LAYOUTS
+========================================= */
+
+.panel,
+.stat-card,
+.vehicle-detail-card {
+    border: 1px solid #e5e7eb;
+    background: white;
 }
 
-.auth-container {
-  width: 100%;
-  max-width: 420px;
-  padding: 20px;
-}
-
-.auth-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 35px;
-  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
-}
-
-.auth-logo {
-  font-size: 25px;
-  font-weight: bold;
-  margin-bottom: 28px;
-}
-
-.auth-card h1 {
-  font-size: 27px;
-  margin-bottom: 7px;
-}
-
-.auth-subtitle {
-  color: #6b7280;
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 24px;
-}
-
-.auth-form {
-  display: grid;
-  gap: 9px;
-}
-
-.auth-form label {
-  font-size: 13px;
-  font-weight: bold;
-  margin-top: 8px;
-}
-
-.auth-form input {
-  width: 100%;
-  padding: 11px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
-  font: inherit;
-}
-
-.auth-button {
-  width: 100%;
-  margin-top: 14px;
-}
-
-.site-footer {
-  margin-top: 20px;
-}
-
-@media (max-width: 900px) {
-  .sidebar {
-    width: 180px;
-  }
-
-  .main {
-    margin-left: 180px;
-    padding: 25px;
-  }
-
-  .content-grid,
-  .guide-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .vehicle-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-  }
-
-  .main {
-    margin-left: 0;
-    padding: 20px;
-  }
-
-  .topbar {
-    align-items: flex-start;
-    gap: 15px;
-    flex-direction: column;
-  }
-
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .vehicle-selector {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-/* -----------------------------------------
-   Vehicle Photo Carousel
------------------------------------------ */
-
-.vehicle-carousel {
-    position: relative;
-    width: 500px;
-    height: 500px;
-    overflow: hidden;
+.panel {
+    padding: 22px;
     border-radius: 12px;
 }
 
-.vehicle-carousel img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-/* Carousel buttons */
+.panel-header h2 {
+    font-size: 17px;
+}
 
-.vehicle-carousel button {
-    position: absolute;
-    top: 45%;
+.content-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 22px;
+}
 
-    width: 10px;
-    height: 10px;
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
 
+.stat-card {
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.stat-label {
+    margin-bottom: 10px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.stat-number {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.stat-sub {
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.view-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.empty-state,
+.empty-state-small {
+    color: #6b7280;
+}
+
+.empty-state h2 {
+    margin-bottom: 8px;
+    color: #17202a;
+}
+
+.empty-state-small {
+    padding: 10px 0;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   BUTTONS AND ALERTS
+========================================= */
+
+.button {
+    display: inline-block;
+    padding: 10px 15px;
     border: none;
-    border-radius: 50%;
-
-    background: none;
-    color: rgb(4, 20, 54);
-
-    font-size: 30px;
-    cursor: pointer;
-
-}
-
-#previousButton {
-    left: 15px;
-}
-
-#nextButton {
-    right: 15px;
-}
-
-/* Photo number */
-
-#photoNumber {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    background: rgba(0, 0, 0, 0.7);
+    border-radius: 7px;
+    background: #2563eb;
     color: white;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
 
-    padding: 6px 12px;
-    border-radius: 0px;
+.button:hover {
+    background: #1d4ed8;
+}
 
+.button-secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.button-secondary:hover {
+    background: #d1d5db;
+}
+
+.alert {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.alert.success {
+    border: 1px solid #a7f3d0;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.alert.error {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+
+/* =========================================
+   VEHICLE COMPONENTS
+========================================= */
+
+.vehicle-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 20px;
+    padding: 25px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: white;
+}
+
+.vehicle-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.vehicle-info h2 {
+    margin-bottom: 8px;
+    font-size: 22px;
+}
+
+.vehicle-info p {
+    margin-bottom: 18px;
+    color: #6b7280;
     font-size: 14px;
 }
 
-/* Upload button */
+.mileage {
+    display: inline-block;
+    padding: 9px 13px;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.vehicle-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.vehicle-selector label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.vehicle-selector select,
+.form-grid select,
+.form-grid input,
+.form-grid textarea {
+    padding: 10px 11px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    background: white;
+    font: inherit;
+}
+
+.vehicle-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.vehicle-list-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 17px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+    color: #17202a;
+    text-decoration: none;
+}
+
+.vehicle-list-card:hover,
+.vehicle-list-card.selected {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 1px #2563eb;
+}
+
+.vehicle-list-card span,
+.vehicle-list-card small {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.vehicle-detail-card {
+    padding: 25px;
+    border-radius: 14px;
+}
+
+.vehicle-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.vehicle-detail-header h2 {
+    font-size: 24px;
+}
+
+.vehicle-nickname {
+    margin-top: 5px;
+    color: #6b7280;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.detail-grid div {
+    padding-top: 12px;
+    border-top: 1px solid #edf0f2;
+}
+
+.detail-grid span {
+    display: block;
+    margin-bottom: 5px;
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.detail-grid strong {
+    font-size: 14px;
+    word-break: break-word;
+}
+
+
+/* =========================================
+   VEHICLE PHOTO GALLERY
+========================================= */
+
+.car-image {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    width: min(100%, 540px);
+    min-width: 0;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.car-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.vehicle-carousel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #e9eef5;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+}
+
+.vehicle-carousel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.vehicle-photo-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background: linear-gradient(135deg, #eef2f7, #dfe7f1);
+    color: #64748b;
+    font-size: 15px;
+    text-align: center;
+}
+
+.vehicle-carousel button {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.68);
+    color: white;
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.vehicle-carousel button:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.06);
+    background: rgba(15, 23, 42, 0.9);
+}
+
+.vehicle-carousel button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+#previousButton {
+    left: 14px;
+}
+
+#nextButton {
+    right: 14px;
+}
+
+#photoNumber {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    z-index: 2;
+    padding: 6px 13px;
+    transform: translateX(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    background: rgba(15, 23, 42, 0.72);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
 
 .upload-button {
-    display: outside;
-    margin-top: 0px;
-
-    padding: 10px 16px;
-
-    background: #3d51e5;
-    color: rgb(229, 228, 228);
-    border-radius: 0px;
-
+    display: inline-flex;
+    align-self: flex-start;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    margin: 0;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #3157a4;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.upload-button:hover {
+    transform: translateY(-1px);
+    background: #24478e;
 }
 
 .upload-button input {
     display: none;
 }
 
+.upload-button.uploading {
+    opacity: 0.65;
+    pointer-events: none;
+    cursor: wait;
+}
+
+.upload-button.uploading::after {
+    margin-left: 5px;
+    content: "Uploading...";
+}
+
+
+/* =========================================
+   VEHICLE VALUE
+========================================= */
+
 .value-card {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 20px 24px;
     margin: 16px 0;
-    background: #fff;
+    padding: 20px 24px;
     border-radius: 12px;
+    background: white;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .value-label {
-    font-size: 0.85rem;
     color: #6b7280;
-    text-transform: uppercase;
+    font-size: 0.85rem;
     letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .value-amount {
-    font-size: 2rem;
     color: #111827;
+    font-size: 2rem;
 }
 
 .value-range {
     color: #6b7280;
 }
 
-/* Dark Mode: Soft Charcoal and Slate */
-body.dark-mode {
-    background-color: #171923;
-    color: #F1F3F9;
+
+/* =========================================
+   MAINTENANCE COMPONENTS
+========================================= */
+
+.maintenance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #edf0f2;
 }
 
-/* Cards and content panels */
-body.dark-mode .card {
-    background-color: #222635;
-    color: #F1F3F9;
-    border: 1px solid #454C60;
+.maintenance-item:last-child {
+    border-bottom: none;
 }
 
-body.dark-mode .card-header,
-body.dark-mode .card-footer {
-    background-color: #292E40;
-    color: #F1F3F9;
-    border-color: #454C60;
+.service-name {
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
-/* Headings and general text */
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode h5,
-body.dark-mode h6,
-body.dark-mode p,
-body.dark-mode label,
-body.dark-mode .form-label {
-    color: #F1F3F9;
+.service-detail {
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
-/* Secondary text */
-body.dark-mode .text-muted,
-body.dark-mode .text-secondary {
-    color: #C0C6D4 !important;
+.status {
+    padding: 6px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
 }
 
-/* Tables */
-body.dark-mode .table {
-    --bs-table-color: #F1F3F9;
-    --bs-table-bg: #222635;
-    --bs-table-border-color: #454C60;
-    --bs-table-striped-bg: #292E40;
-    --bs-table-striped-color: #F1F3F9;
-    --bs-table-hover-bg: #343B50;
-    --bs-table-hover-color: #FFFFFF;
+.soon {
+    background: #fff7ed;
+    color: #c2410c;
 }
 
-/* Input fields and dropdowns */
-body.dark-mode .form-control,
-body.dark-mode .form-select {
-    background-color: #202535;
-    color: #F1F3F9;
-    border: 1px solid #626B80;
+.good {
+    background: #ecfdf5;
+    color: #047857;
 }
 
-body.dark-mode .form-control::placeholder {
-    color: #B8C0D0;
-    opacity: 1;
+.overdue {
+    background: #fef2f2;
+    color: #dc2626;
 }
 
-/* Focus indicators for keyboard and form accessibility */
-body.dark-mode .form-control:focus,
-body.dark-mode .form-select:focus {
-    background-color: #202535;
-    color: #FFFFFF;
-    border-color: #A9C7FF;
-    box-shadow: 0 0 0 0.2rem rgba(169, 199, 255, 0.3);
+.completed {
+    background: #f3f4f6;
+    color: #4b5563;
 }
 
-/* Links */
-body.dark-mode a:not(.btn) {
-    color: #A9C7FF;
+
+/* =========================================
+   TABLES
+========================================= */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-body.dark-mode a:not(.btn):hover {
-    color: #D0E0FF;
+th {
+    padding-bottom: 12px;
+    color: #6b7280;
+    font-size: 11px;
+    text-align: left;
+    text-transform: uppercase;
 }
 
-/* Buttons */
-body.dark-mode .btn-primary {
-    background-color: #3157A4;
-    border-color: #3157A4;
-    color: #FFFFFF;
+td {
+    padding: 13px 5px;
+    border-top: 1px solid #edf0f2;
+    font-size: 13px;
+    vertical-align: top;
 }
 
-body.dark-mode .btn-primary:hover {
-    background-color: #3D68BD;
-    border-color: #3D68BD;
-    color: #FFFFFF;
+.table-scroll {
+    overflow-x: auto;
 }
 
-body.dark-mode .btn-secondary {
-    background-color: #3A4053;
-    border-color: #626B80;
-    color: #FFFFFF;
+
+/* =========================================
+   FORMS
+========================================= */
+
+.form-grid {
+    display: grid;
+    gap: 9px;
 }
 
-body.dark-mode .btn-secondary:hover {
-    background-color: #4A5269;
-    border-color: #7C879F;
-    color: #FFFFFF;
+.form-grid label {
+    margin-top: 7px;
+    font-size: 13px;
+    font-weight: bold;
 }
 
-/* Horizontal lines and separators */
-body.dark-mode hr {
-    border-color: #626B80;
-    opacity: 1;
+.form-grid button {
+    margin-top: 8px;
 }
 
-/* Navigation */
-body.dark-mode .navbar {
-    background-color: #222635 !important;
-    border-bottom: 1px solid #454C60;
+
+/* =========================================
+   GUIDE PAGE
+========================================= */
+
+.guide-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 22px;
 }
 
-body.dark-mode .navbar .nav-link,
-body.dark-mode .navbar .navbar-brand {
-    color: #F1F3F9;
+.guide-sidebar h2 {
+    margin-bottom: 14px;
+    font-size: 17px;
 }
 
-body.dark-mode .navbar .nav-link:hover {
-    color: #A9C7FF;
+.guide-link {
+    display: block;
+    margin-bottom: 5px;
+    padding: 11px 12px;
+    border-radius: 7px;
+    color: #374151;
+    text-decoration: none;
+    font-size: 13px;
 }
 
-/* ---------- REMINDERS PAGE ---------- */
+.guide-link:hover,
+.guide-link.selected {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: bold;
+}
+
+.guide-category {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.guide-article h2 {
+    margin-top: 8px;
+    margin-bottom: 10px;
+    font-size: 25px;
+}
+
+.guide-summary {
+    margin-bottom: 22px;
+    color: #6b7280;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.guide-body {
+    line-height: 1.7;
+    white-space: normal;
+}
+
+.risk-box {
+    margin-top: 25px;
+    padding: 17px;
+    border: 1px solid #fed7aa;
+    border-radius: 9px;
+    background: #fff7ed;
+}
+
+.risk-box h3 {
+    margin-bottom: 7px;
+    color: #9a3412;
+    font-size: 14px;
+}
+
+.risk-box p {
+    color: #7c2d12;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   LOGIN AND REGISTRATION
+========================================= */
+
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f4f6f8;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.auth-card {
+    padding: 35px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
+}
+
+.auth-logo {
+    margin-bottom: 28px;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.auth-card h1 {
+    margin-bottom: 7px;
+    font-size: 27px;
+}
+
+.auth-subtitle {
+    margin-bottom: 24px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.auth-form {
+    display: grid;
+    gap: 9px;
+}
+
+.auth-form label {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font: inherit;
+}
+
+.auth-button {
+    width: 100%;
+    margin-top: 14px;
+}
+
+
+/* =========================================
+   REMINDERS PAGE
+========================================= */
 
 .reminder-stats {
     display: grid;
@@ -934,17 +876,17 @@ body.dark-mode .navbar .nav-link:hover {
     display: flex;
     flex-direction: column;
     gap: 7px;
-    background: #fff;
+    padding: 20px;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 20px;
+    background: white;
 }
 
 .reminder-stat-label {
     color: #6b7280;
     font-size: 12px;
     font-weight: bold;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
 }
 
 .reminder-stat strong {
@@ -985,10 +927,10 @@ body.dark-mode .navbar .nav-link:hover {
     padding: 8px 13px;
     border: 1px solid #d1d5db;
     border-radius: 7px;
-    background: #fff;
+    background: white;
     color: #374151;
-    cursor: pointer;
     font-size: 13px;
+    cursor: pointer;
 }
 
 .reminder-filter:hover,
@@ -998,26 +940,39 @@ body.dark-mode .navbar .nav-link:hover {
     color: #1d4ed8;
 }
 
-.reminder-item {
+.reminder-item,
+.reminder-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
     padding: 18px 0;
     border-bottom: 1px solid #edf0f2;
+    min-width: 0;
 }
 
-.reminder-item:last-child {
+.reminder-item:last-child,
+.reminder-card:last-child {
     border-bottom: none;
 }
 
-.reminder-item-info {
+.reminder-item-info,
+.reminder-card-content {
     min-width: 0;
 }
 
 .reminder-item-info h3 {
-    font-size: 15px;
     margin-bottom: 6px;
+    font-size: 15px;
+}
+
+.reminder-card-content {
+    overflow-wrap: anywhere;
+}
+
+.reminder-card-content h3 {
+    margin-bottom: 7px;
+    font-size: 16px;
 }
 
 .reminder-detail {
@@ -1027,12 +982,55 @@ body.dark-mode .navbar .nav-link:hover {
     overflow-wrap: anywhere;
 }
 
-.reminder-item-actions {
+.reminder-vehicle,
+.reminder-due,
+.reminder-notes {
+    margin-bottom: 6px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.reminder-status {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.reminder-status.overdue {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.reminder-status.soon {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.reminder-status.upcoming {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.reminder-status.completed {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.reminder-item-actions,
+.reminder-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
-    flex-wrap: wrap;
     gap: 9px;
+}
+
+.reminder-actions {
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .reminder-action,
@@ -1042,13 +1040,13 @@ body.dark-mode .navbar .nav-link:hover {
     border-radius: 7px;
     background: white;
     color: #374151;
-    cursor: pointer;
     font-size: 12px;
+    cursor: pointer;
 }
 
 .reminder-action:hover {
-    background: #eff6ff;
     border-color: #93c5fd;
+    background: #eff6ff;
 }
 
 .reminder-delete {
@@ -1081,67 +1079,6 @@ body.dark-mode .navbar .nav-link:hover {
     gap: 10px;
 }
 
-.button-secondary {
-    background: #e5e7eb;
-    color: #374151;
-}
-
-.button-secondary:hover {
-    background: #d1d5db;
-}
-
-/* Dark mode */
-
-body.dark-mode .reminder-stat,
-body.dark-mode .reminder-filter,
-body.dark-mode .reminder-action,
-body.dark-mode .reminder-delete {
-    background: #222635;
-    color: #F1F3F9;
-    border-color: #454C60;
-}
-
-body.dark-mode .reminder-filter.active {
-    background: #253657;
-    color: #A9C7FF;
-}
-
-body.dark-mode .reminder-detail,
-body.dark-mode .reminder-stat-label,
-body.dark-mode .reminder-stat > span:last-child,
-body.dark-mode .reminder-intro,
-body.dark-mode .reminder-help {
-    color: #C0C6D4;
-}
-
-/* Responsive layout */
-
-@media (max-width: 900px) {
-    .reminder-item {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .reminder-item-actions {
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 600px) {
-    .reminder-stats {
-        grid-template-columns: 1fr;
-    }
-
-    .reminder-panel-header {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-}
-
-/* =========================================
-   REMINDERS PAGE - LAYOUT AND COMPONENTS
-========================================= */
-
 .reminders-page {
     width: 100%;
     max-width: 100%;
@@ -1154,8 +1091,8 @@ body.dark-mode .reminder-help {
 }
 
 .reminders-page .row {
-    margin-left: 0;
     margin-right: 0;
+    margin-left: 0;
 }
 
 .reminders-page .card {
@@ -1167,121 +1104,10 @@ body.dark-mode .reminder-help {
     overflow-wrap: anywhere;
 }
 
-.reminder-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    padding: 18px 0;
-    border-bottom: 1px solid #edf0f2;
-    min-width: 0;
-}
-
-.reminder-card:last-child {
-    border-bottom: none;
-}
-
-.reminder-card-content {
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-.reminder-card-content h3 {
-    font-size: 16px;
-    margin-bottom: 7px;
-}
-
-.reminder-vehicle,
-.reminder-due,
-.reminder-notes {
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 6px;
-}
-
-.reminder-status {
-    display: inline-block;
-    padding: 5px 9px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: bold;
-    margin-top: 6px;
-}
-
-.reminder-status.overdue {
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-.reminder-status.soon {
-    background: #fff7ed;
-    color: #c2410c;
-}
-
-.reminder-status.upcoming {
-    background: #ecfdf5;
-    color: #047857;
-}
-
-.reminder-status.completed {
-    background: #f3f4f6;
-    color: #4b5563;
-}
-
-.reminder-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
 .reminders-page .reminder-filter.active {
-    background: #2563eb;
     border-color: #2563eb;
+    background: #2563eb;
     color: white;
-}
-
-/* Dark mode */
-
-body.dark-mode .reminder-card {
-    border-color: #454c60;
-}
-
-body.dark-mode .reminder-vehicle,
-body.dark-mode .reminder-due,
-body.dark-mode .reminder-notes {
-    color: #c0c6d4;
-}
-
-body.dark-mode .reminder-status.completed {
-    background: #3a4053;
-    color: #f1f3f9;
-}
-
-/* Responsive layout */
-
-@media (max-width: 900px) {
-    .reminder-card {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 600px) {
-    .reminder-card {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .reminder-actions {
-        justify-content: flex-start;
-    }
-}
-
-/* Space between vehicle action buttons and vehicle cards */
-.vehicle-actions {
-    margin-bottom: 30px;
 }
 
 
@@ -1300,15 +1126,15 @@ body:has(#vehicleForm) main {
 }
 
 body:has(#vehicleForm) main > h1 {
-    font-size: 28px;
-    color: #17202a;
     margin-bottom: 8px;
+    color: #17202a;
+    font-size: 28px;
 }
 
 body:has(#vehicleForm) .sub {
+    margin-bottom: 28px;
     color: #6b7280;
     font-size: 14px;
-    margin-bottom: 28px;
 }
 
 #vehicleForm {
@@ -1317,43 +1143,39 @@ body:has(#vehicleForm) .sub {
     gap: 22px;
 }
 
-/* Form sections */
-
 #vehicleForm fieldset {
     min-width: 0;
+    padding: 24px;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     background: white;
-    padding: 24px;
 }
 
 #vehicleForm legend {
     padding: 0 8px;
+    color: #17202a;
     font-size: 17px;
     font-weight: bold;
-    color: #17202a;
 }
 
 #vehicleForm .hint {
-    color: #6b7280;
     font-size: 12px;
     font-weight: normal;
+    color: #6b7280;
 }
 
 #vehicleForm label {
     display: block;
+    margin-bottom: 7px;
+    color: #374151;
     font-size: 13px;
     font-weight: bold;
-    color: #374151;
-    margin-bottom: 7px;
 }
 
 #vehicleForm label.req::after {
     content: " *";
     color: #dc2626;
 }
-
-/* Input grid */
 
 #vehicleForm .grid {
     display: grid;
@@ -1368,8 +1190,6 @@ body:has(#vehicleForm) .sub {
 #vehicleForm .grid .full {
     grid-column: 1 / -1;
 }
-
-/* Inputs */
 
 #vehicleForm input {
     width: 100%;
@@ -1390,12 +1210,10 @@ body:has(#vehicleForm) .sub {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* Buttons */
-
 #vehicleForm button {
+    padding: 10px 16px;
     border: none;
     border-radius: 7px;
-    padding: 10px 16px;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
@@ -1411,40 +1229,34 @@ body:has(#vehicleForm) .sub {
     background: #1d4ed8;
 }
 
-#vehicleForm .secondary {
-    background: #e5e7eb;
-    color: #374151;
-    margin-top: 16px;
-}
-
-#vehicleForm .secondary:hover {
-    background: #d1d5db;
-}
-
+#vehicleForm .secondary,
 #vehicleForm .reset {
     background: #e5e7eb;
     color: #374151;
 }
 
+#vehicleForm .secondary {
+    margin-top: 16px;
+}
+
+#vehicleForm .secondary:hover,
 #vehicleForm .reset:hover {
     background: #d1d5db;
 }
 
-/* Maintenance schedule rows */
-
 #vehicleForm .sched {
     position: relative;
+    margin-bottom: 14px;
+    padding: 24px 18px 18px;
     border: 1px solid #e5e7eb;
     border-radius: 9px;
-    padding: 24px 18px 18px;
-    margin-bottom: 14px;
     background: #f9fafb;
 }
 
 #vehicleForm .sched .remove {
     display: block;
-    margin-left: auto;
     margin-bottom: 15px;
+    margin-left: auto;
     padding: 7px 11px;
     background: #fef2f2;
     color: #b91c1c;
@@ -1453,8 +1265,6 @@ body:has(#vehicleForm) .sub {
 #vehicleForm .sched .remove:hover {
     background: #fee2e2;
 }
-
-/* Bottom actions */
 
 #vehicleForm .actions {
     display: flex;
@@ -1468,8 +1278,6 @@ body:has(#vehicleForm) .sub {
     padding: 12px 18px;
 }
 
-/* Form messages */
-
 .form-message {
     margin-top: 15px;
     padding: 13px 16px;
@@ -1477,7 +1285,317 @@ body:has(#vehicleForm) .sub {
     font-size: 14px;
 }
 
-/* Dark mode */
+
+/* =========================================
+   VEHICLE PAGE ACTIONS AND SPACING
+========================================= */
+
+.vehicle-actions {
+    margin-bottom: 30px;
+}
+
+/* Maintenance page spacing */
+.maintenance-layout {
+    gap: 28px;
+    margin-bottom: 28px;
+}
+
+.maintenance-layout > .panel {
+    min-width: 0;
+}
+
+/* My Vehicle page spacing */
+#vehicle-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+#vehicle-content .vehicle-actions,
+#vehicle-content .vehicle-list,
+#vehicle-content > .vehicle-detail-card {
+    margin: 0;
+}
+
+
+/* =========================================
+   DASHBOARD AND GENERAL DARK MODE
+========================================= */
+
+body.dark-mode {
+    background-color: #171923;
+    color: #f1f3f9;
+}
+
+body.dark-mode .card,
+body.dark-mode .panel,
+body.dark-mode .stat-card,
+body.dark-mode .value-card,
+body.dark-mode #value-card,
+body.dark-mode .vehicle-card,
+body.dark-mode .vehicle-detail-card,
+body.dark-mode .reminder-stat {
+    border-color: #454c60;
+    background-color: #222635;
+    color: #f1f3f9;
+}
+
+body.dark-mode .card-header,
+body.dark-mode .card-footer {
+    border-color: #454c60;
+    background-color: #292e40;
+    color: #f1f3f9;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode p,
+body.dark-mode label,
+body.dark-mode .form-label {
+    color: #f1f3f9;
+}
+
+body.dark-mode .text-muted,
+body.dark-mode .text-secondary {
+    color: #c0c6d4 !important;
+}
+
+body.dark-mode .table {
+    --bs-table-color: #f1f3f9;
+    --bs-table-bg: #222635;
+    --bs-table-border-color: #454c60;
+    --bs-table-striped-bg: #292e40;
+    --bs-table-striped-color: #f1f3f9;
+    --bs-table-hover-bg: #343b50;
+    --bs-table-hover-color: #ffffff;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    border: 1px solid #626b80;
+    background-color: #202535;
+    color: #f1f3f9;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #b8c0d0;
+    opacity: 1;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    border-color: #a9c7ff;
+    background-color: #202535;
+    color: white;
+    box-shadow: 0 0 0 0.2rem rgba(169, 199, 255, 0.3);
+}
+
+body.dark-mode a:not(.btn) {
+    color: #a9c7ff;
+}
+
+body.dark-mode a:not(.btn):hover {
+    color: #d0e0ff;
+}
+
+body.dark-mode .btn-primary {
+    border-color: #3157a4;
+    background-color: #3157a4;
+    color: white;
+}
+
+body.dark-mode .btn-primary:hover {
+    border-color: #3d68bd;
+    background-color: #3d68bd;
+    color: white;
+}
+
+body.dark-mode .btn-secondary {
+    border-color: #626b80;
+    background-color: #3a4053;
+    color: white;
+}
+
+body.dark-mode .btn-secondary:hover {
+    border-color: #7c879f;
+    background-color: #4a5269;
+    color: white;
+}
+
+body.dark-mode hr {
+    border-color: #626b80;
+    opacity: 1;
+}
+
+body.dark-mode .navbar {
+    border-bottom: 1px solid #454c60;
+    background-color: #222635 !important;
+}
+
+body.dark-mode .navbar .nav-link,
+body.dark-mode .navbar .navbar-brand {
+    color: #f1f3f9;
+}
+
+body.dark-mode .navbar .nav-link:hover {
+    color: #a9c7ff;
+}
+
+
+/* =========================================
+   DASHBOARD DARK MODE
+========================================= */
+
+body.dark-mode .profile {
+    border-color: #454c60;
+    background-color: #222635;
+    color: #f1f3f9;
+}
+
+body.dark-mode #dashboard-user,
+body.dark-mode .vehicle-info h2,
+body.dark-mode .vehicle-card strong,
+body.dark-mode .vehicle-card span {
+    color: #f1f3f9;
+}
+
+body.dark-mode .vehicle-info p {
+    color: #c0c6d4;
+}
+
+body.dark-mode .mileage {
+    background-color: #253657;
+    color: #a9c7ff;
+}
+
+body.dark-mode .stat-label,
+body.dark-mode .stat-sub {
+    color: #c0c6d4;
+}
+
+body.dark-mode .maintenance-item {
+    border-color: #454c60;
+}
+
+body.dark-mode .vehicle-carousel {
+    border-color: #454c60;
+    background-color: #202535;
+}
+
+body.dark-mode .car-image {
+    background-color: #202535;
+    color: #c0c6d4;
+}
+
+body.dark-mode .vehicle-photo-empty {
+    background: linear-gradient(135deg, #292e40, #202535);
+    color: #c0c6d4;
+}
+
+body.dark-mode .vehicle-carousel button {
+    background: rgba(35, 42, 60, 0.88);
+    color: white;
+}
+
+body.dark-mode .vehicle-carousel button:hover:not(:disabled) {
+    background: rgba(65, 76, 103, 0.95);
+}
+
+body.dark-mode .vehicle-carousel button.btn-light {
+    border-color: #626b80;
+    background-color: #3a4053;
+    color: #f1f3f9;
+}
+
+body.dark-mode #previousButton,
+body.dark-mode #nextButton {
+    color: #f1f3f9;
+}
+
+body.dark-mode #photoNumber {
+    background: rgba(20, 24, 36, 0.9);
+    color: white;
+}
+
+body.dark-mode .upload-button {
+    background-color: #3157a4;
+    color: white;
+}
+
+body.dark-mode .upload-button:hover {
+    background-color: #4169b5;
+}
+
+body.dark-mode .value-label,
+body.dark-mode #value-card .text-muted,
+body.dark-mode .value-range {
+    color: #c0c6d4 !important;
+}
+
+body.dark-mode .value-amount,
+body.dark-mode #value-card strong {
+    color: #f1f3f9 !important;
+}
+
+#theme-toggle {
+    display: inline-block;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================
+   REMINDERS DARK MODE
+========================================= */
+
+body.dark-mode .reminder-filter,
+body.dark-mode .reminder-action,
+body.dark-mode .reminder-delete {
+    border-color: #454c60;
+    background: #222635;
+    color: #f1f3f9;
+}
+
+body.dark-mode .reminder-filter.active {
+    background: #253657;
+    color: #a9c7ff;
+}
+
+body.dark-mode .reminder-detail,
+body.dark-mode .reminder-stat-label,
+body.dark-mode .reminder-stat > span:last-child,
+body.dark-mode .reminder-intro,
+body.dark-mode .reminder-help,
+body.dark-mode .reminder-vehicle,
+body.dark-mode .reminder-due,
+body.dark-mode .reminder-notes {
+    color: #c0c6d4;
+}
+
+body.dark-mode .reminder-card,
+body.dark-mode .reminder-item {
+    border-color: #454c60;
+}
+
+body.dark-mode .reminder-status.completed {
+    background: #3a4053;
+    color: #f1f3f9;
+}
+
+
+/* =========================================
+   REGISTER VEHICLE DARK MODE
+========================================= */
 
 body.dark-mode:has(#vehicleForm) {
     background: #171923;
@@ -1489,8 +1607,8 @@ body.dark-mode #vehicleForm legend {
 }
 
 body.dark-mode #vehicleForm fieldset {
-    background: #222635;
     border-color: #454c60;
+    background: #222635;
 }
 
 body.dark-mode #vehicleForm label {
@@ -1498,14 +1616,14 @@ body.dark-mode #vehicleForm label {
 }
 
 body.dark-mode #vehicleForm input {
+    border-color: #626b80;
     background: #202535;
     color: #f1f3f9;
-    border-color: #626b80;
 }
 
 body.dark-mode #vehicleForm .sched {
-    background: #292e40;
     border-color: #454c60;
+    background: #292e40;
 }
 
 body.dark-mode #vehicleForm .secondary,
@@ -1514,7 +1632,66 @@ body.dark-mode #vehicleForm .reset {
     color: #f1f3f9;
 }
 
-/* Responsive */
+
+/* =========================================
+   RESPONSIVE LAYOUT
+========================================= */
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 180px;
+    }
+
+    .main {
+        margin-left: 180px;
+        padding: 25px;
+    }
+
+    .content-grid,
+    .guide-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .vehicle-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .reminder-item,
+    .reminder-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .reminder-item-actions,
+    .reminder-actions {
+        justify-content: flex-start;
+    }
+
+    .reminder-actions {
+        justify-content: flex-start;
+    }
+
+    .reminder-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .vehicle-card {
+        align-items: stretch;
+    }
+
+    .car-image {
+        width: 100%;
+        max-width: none;
+    }
+}
 
 @media (max-width: 650px) {
     body:has(#vehicleForm) main {
@@ -1542,362 +1719,32 @@ body.dark-mode #vehicleForm .reset {
     }
 }
 
-/* Dashboard Dark Mode */
-body.dark-mode .stat-card,
-body.dark-mode .panel,
-body.dark-mode .value-card {
-    background-color: #222635;
-    color: #F1F3F9;
-    border-color: #454C60;
-}
-
-body.dark-mode .stat-label,
-body.dark-mode .stat-sub {
-    color: #C0C6D4;
-}
-
-body.dark-mode .maintenance-item {
-    border-color: #454C60;
-}
-
-
-/* =========================================
-   DASHBOARD DARK MODE FIXES
-========================================= */
-
-/* Top-right user profile */
-body.dark-mode .profile {
-    background-color: #222635;
-    color: #F1F3F9;
-    border-color: #454C60;
-}
-
-body.dark-mode #dashboard-user {
-    color: #F1F3F9;
-}
-
-/* Main vehicle information card */
-body.dark-mode .vehicle-card {
-    background-color: #222635;
-    color: #F1F3F9;
-    border-color: #454C60;
-}
-
-body.dark-mode .vehicle-info h2 {
-    color: #F1F3F9;
-}
-
-body.dark-mode .vehicle-info p {
-    color: #C0C6D4;
-}
-
-/* Vehicle mileage badge */
-body.dark-mode .mileage {
-    background-color: #253657;
-    color: #A9C7FF;
-}
-
-/* Vehicle photo carousel */
-body.dark-mode .vehicle-carousel {
-    background-color: #202535;
-    border: 1px solid #454C60;
-}
-
-body.dark-mode .car-image {
-    background-color: #202535;
-    color: #C0C6D4;
-}
-
-/* Carousel navigation buttons */
-body.dark-mode .vehicle-carousel button,
-body.dark-mode #previousButton,
-body.dark-mode #nextButton {
-    color: #F1F3F9;
-}
-
-body.dark-mode .vehicle-carousel button.btn-light {
-    background-color: #3A4053;
-    border-color: #626B80;
-    color: #F1F3F9;
-}
-
-body.dark-mode .vehicle-carousel button:hover {
-    background-color: #4A5269;
-}
-
-/* Carousel photo counter */
-body.dark-mode #photoNumber {
-    background-color: rgba(20, 24, 36, 0.9);
-    color: #FFFFFF;
-}
-
-/* Vehicle photo upload button */
-body.dark-mode .upload-button {
-    background-color: #3157A4;
-    color: #FFFFFF;
-}
-
-/* Estimated vehicle value */
-body.dark-mode .value-card,
-body.dark-mode #value-card {
-    background-color: #222635;
-    color: #F1F3F9;
-    border-color: #454C60;
-}
-
-body.dark-mode .value-label,
-body.dark-mode #value-card .text-muted,
-body.dark-mode .value-range {
-    color: #C0C6D4 !important;
-}
-
-body.dark-mode .value-amount,
-body.dark-mode #value-card strong {
-    color: #F1F3F9 !important;
-}
-
-/* General dashboard text */
-body.dark-mode .vehicle-card strong,
-body.dark-mode .vehicle-card span {
-    color: #F1F3F9;
-}
-
-/* Dashboard theme toggle spacing */
-#theme-toggle {
-    display: inline-block;
-    margin-bottom: 20px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-#theme-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
-}
-
-
-/* =========================================
-   ROADREADY VEHICLE PHOTO GALLERY
-========================================= */
-
-.vehicle-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-}
-
-.vehicle-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.car-image {
-    width: min(100%, 540px);
-    height: auto;
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-}
-
-.vehicle-carousel {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    height: auto;
-    overflow: hidden;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    background: #e9eef5;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
-}
-
-.vehicle-carousel img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-}
-
-.vehicle-photo-empty {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    color: #64748b;
-    font-size: 15px;
-    text-align: center;
-    background:
-        linear-gradient(135deg, #eef2f7, #dfe7f1);
-}
-
-.vehicle-carousel button {
-    position: absolute;
-    top: 50%;
-    z-index: 2;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 50%;
-    background: rgba(15, 23, 42, 0.68);
-    color: #fff;
-    font-size: 30px;
-    line-height: 1;
-    cursor: pointer;
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        opacity 0.2s ease;
-}
-
-.vehicle-carousel button:hover:not(:disabled) {
-    background: rgba(15, 23, 42, 0.9);
-    transform: translateY(-50%) scale(1.06);
-}
-
-.vehicle-carousel button:disabled {
-    opacity: 0.35;
-    cursor: default;
-}
-
-#previousButton {
-    left: 14px;
-}
-
-#nextButton {
-    right: 14px;
-}
-
-#photoNumber {
-    position: absolute;
-    left: 50%;
-    bottom: 14px;
-    z-index: 2;
-    transform: translateX(-50%);
-    padding: 6px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 30px;
-    background: rgba(15, 23, 42, 0.72);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.2;
-    white-space: nowrap;
-}
-
-.upload-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    align-self: flex-start;
-    gap: 8px;
-    width: auto;
-    margin: 0;
-    padding: 11px 18px;
-    border: 0;
-    border-radius: 10px;
-    background: #3157a4;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        opacity 0.2s ease;
-}
-
-.upload-button:hover {
-    background: #24478e;
-    transform: translateY(-1px);
-}
-
-.upload-button input {
-    display: none;
-}
-
-.upload-button.uploading {
-    opacity: 0.65;
-    pointer-events: none;
-    cursor: wait;
-}
-
-.upload-button.uploading::after {
-    content: "Uploading...";
-    margin-left: 5px;
-}
-
-
-/* =========================================
-   DARK MODE
-========================================= */
-
-body.dark-mode .vehicle-carousel {
-    border-color: #454c60;
-    background: #202535;
-}
-
-body.dark-mode .vehicle-photo-empty {
-    background: linear-gradient(135deg, #292e40, #202535);
-    color: #c0c6d4;
-}
-
-body.dark-mode .vehicle-carousel button {
-    background: rgba(35, 42, 60, 0.88);
-    color: #fff;
-}
-
-body.dark-mode .vehicle-carousel button:hover:not(:disabled) {
-    background: rgba(65, 76, 103, 0.95);
-}
-
-body.dark-mode #photoNumber {
-    background: rgba(20, 24, 36, 0.9);
-    color: #fff;
-}
-
-body.dark-mode .upload-button {
-    background: #3157a4;
-    color: #fff;
-}
-
-body.dark-mode .upload-button:hover {
-    background: #4169b5;
-}
-
-
-/* =========================================
-   RESPONSIVE LAYOUT
-========================================= */
-
-@media (max-width: 850px) {
-
-    .vehicle-card {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .car-image {
-        width: 100%;
-        max-width: none;
-    }
-}
-
 @media (max-width: 600px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+    }
+
+    .main {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vehicle-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
     .vehicle-carousel {
         aspect-ratio: 4 / 3;
@@ -1925,5 +1772,23 @@ body.dark-mode .upload-button:hover {
 
     .upload-button {
         width: 100%;
+    }
+
+    .reminder-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .reminder-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .maintenance-layout {
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    #vehicle-content {
+        gap: 20px;
     }
 }
