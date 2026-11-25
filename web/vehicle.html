@@ -7,6 +7,7 @@
  * - Define the My Vehicle page structure.
  * - Provide the vehicle selection interface.
  * - Display selected vehicle information.
+ * - Display the selected vehicle's photo gallery.
  * - Provide the vehicle CSV import interface.
  * - Provide the vehicle value display area.
  * - Load shared RoadReady components and styling.
@@ -19,104 +20,241 @@
  * - Manage authentication directly.
  *
  * Vehicle data is loaded through /client/js/pages/vehicle.js
- * and /server/routes/vehicles.js.
+ * and /server/routes/vehicle.js.
+ * Vehicle photos are loaded through /server/routes/vehicle-photos.js.
 -->
- 
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>My Vehicle | RoadReady</title>
 
     <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    >
 
     <!-- RoadReady Styles -->
     <link rel="stylesheet" href="/client/css/styles.css">
+
     <link rel="icon" href="data:,">
+
 </head>
 
 <body>
 
-    <main class="main">
+<main class="main">
 
-        <div id="vehicle-content">
+    <div id="vehicle-content">
 
-            <!-- Topbar -->
-            <div id="vehicle-topbar"></div>
-            
-            <!-- Vehicle Actions -->
-            <div class="vehicle-actions">
-                <div class="vehicle-actions-heading">
-                    <h2>Manage Vehicles</h2>
-                    <p>Add a vehicle manually or import your vehicle information.</p>
-                </div>
+        <!-- Topbar -->
+        <div id="vehicle-topbar"></div>
 
-                <div class="vehicle-action-buttons">
-                    <button id="import" class="button button-secondary">
-                        <i class="fa-solid fa-file-import"></i>
-                        Import Vehicle CSV
-                    </button>
 
-                    <input type="file" id="csv-input" accept=".csv" style="display: none;">
+        <!-- Vehicle Actions -->
+        <div class="vehicle-actions">
 
-                    <button id="register-vehicle-button" class="button">
-                        <i class="fa-solid fa-plus"></i>
-                        Register New Vehicle
-                    </button>
-                </div>
+            <div class="vehicle-actions-heading">
+
+                <h2>Manage Vehicles</h2>
+
+                <p>
+                    Add a vehicle manually or import your vehicle information.
+                </p>
+
             </div>
 
-            <!-- Vehicle List -->
-            <div class="vehicle-list" id="vehicle-list"></div>
-            
-            <!-- Vehicle Details -->
-            <section class="vehicle-detail-card">
-                <div class="vehicle-detail-header">
-                    <div>
-                        <h2 id="vehicle-title"></h2>
-                        <p id="vehicle-nickname" class="vehicle-nickname"></p>
-                    </div>
-                    <span id="vehicle-mileage" class="mileage"></span>
-                </div>
 
-                <div class="detail-grid">
-                    <div>
-                        <span>VIN</span>
-                        <strong id="vehicle-vin"></strong>
-                    </div>
+            <div class="vehicle-action-buttons">
 
-                    <div>
-                        <span>Trim</span>
-                        <strong id="vehicle-trim"></strong>
-                    </div>
+                <button
+                    id="import"
+                    class="button button-secondary"
+                    type="button"
+                >
 
-                    <div>
-                        <span>Engine</span>
-                        <strong id="vehicle-engine"></strong>
-                    </div>
+                    <i class="fa-solid fa-file-import"></i>
 
-                    <div>
-                        <span>Transmission</span>
-                        <strong id="vehicle-transmission"></strong>
-                    </div>
+                    Import Vehicle CSV
 
-                    <div>
-                        <span>Body Type</span>
-                        <strong id="vehicle-body-type"></strong>
-                    </div>
-                </div>
-            </section>
-            <!-- Vehicle Value -->
-            <div id="vehicle-value"></div>
+                </button>
+
+
+                <input
+                    type="file"
+                    id="csv-input"
+                    accept=".csv"
+                    style="display: none;"
+                >
+
+
+                <button
+                    id="register-vehicle-button"
+                    class="button"
+                    type="button"
+                >
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Register New Vehicle
+
+                </button>
+
+            </div>
+
         </div>
-    </main>
+
+
+        <!-- Vehicle List -->
+        <div
+            class="vehicle-list"
+            id="vehicle-list"
+        ></div>
+
+
+        <!-- Vehicle Details -->
+        <section class="vehicle-detail-card">
+
+            <div class="vehicle-detail-header">
+
+                <div>
+
+                    <h2 id="vehicle-title"></h2>
+
+                    <p
+                        id="vehicle-nickname"
+                        class="vehicle-nickname"
+                    ></p>
+
+                </div>
+
+                <span
+                    id="vehicle-mileage"
+                    class="mileage"
+                ></span>
+
+            </div>
+
+
+            <div class="detail-grid">
+
+                <div>
+                    <span>VIN</span>
+                    <strong id="vehicle-vin"></strong>
+                </div>
+
+                <div>
+                    <span>Trim</span>
+                    <strong id="vehicle-trim"></strong>
+                </div>
+
+                <div>
+                    <span>Engine</span>
+                    <strong id="vehicle-engine"></strong>
+                </div>
+
+                <div>
+                    <span>Transmission</span>
+                    <strong id="vehicle-transmission"></strong>
+                </div>
+
+                <div>
+                    <span>Body Type</span>
+                    <strong id="vehicle-body-type"></strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Vehicle Photo Gallery -->
+        <section class="vehicle-detail-card vehicle-photo-section">
+
+            <div class="vehicle-detail-header">
+
+                <div>
+                    <h2>Vehicle Photos</h2>
+                    <p class="vehicle-nickname">
+                        Photos of your selected vehicle.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="car-image">
+
+                <div class="vehicle-carousel">
+
+                    <img
+                        id="vehiclePhoto"
+                        src=""
+                        alt="Vehicle"
+                    >
+
+                    <button
+                        id="previousButton"
+                        type="button"
+                        aria-label="Previous vehicle photo"
+                    >
+                        ‹
+                    </button>
+
+                    <span id="photoNumber">0 / 0</span>
+
+                    <button
+                        id="nextButton"
+                        type="button"
+                        aria-label="Next vehicle photo"
+                    >
+                        ›
+                    </button>
+
+                </div>
+
+
+                <label class="upload-button">
+
+                    Add Vehicle Photos
+
+                    <input
+                        type="file"
+                        id="vehicleUpload"
+                        accept="image/*"
+                        multiple
+                    >
+
+                </label>
+
+            </div>
+
+        </section>
+
+
+        <!-- Vehicle Value -->
+        <div id="vehicle-value"></div>
+
+    </div>
+
+</main>
+
 
 <!-- Bootstrap JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -126,12 +264,14 @@
 <script src="/client/components/footer.js"></script>
 <script src="/client/js/app.js"></script>
 
+<!-- Shared Vehicle Gallery -->
+<script src="/client/components/vehicle-gallery.js"></script>
+
 <!-- Vehicle -->
 <script src="/client/js/pages/vehicle.js"></script>
 
 <!-- Authentication -->
 <script src="/client/js/auth/auth-guard.js"></script>
-    
-</body>
 
+</body>
 </html>

@@ -11,6 +11,7 @@
  * - Display vehicle mileage, VIN, trim, engine, transmission,
  *   and body type.
  * - Remember the selected vehicle using localStorage.
+ * - Load and control the selected vehicle's photo gallery.
  * - Provide the interface for vehicle CSV import.
  *
  * This file does NOT:
@@ -20,6 +21,7 @@
  * - Directly modify vehicle records in MySQL.
  *
  * Vehicle data is provided by /server/routes/vehicle.js.
+ * Vehicle photos are provided by /server/routes/vehicle-photos.js.
  */
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -54,20 +56,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // ------------------------------------------
     // CSV IMPORT
-    //
-    // Set up BEFORE loading vehicles. Previously this lived at the
-    // bottom of the load try-block, so a user with zero vehicles
-    // (the exact person who needs to import) hit an early `return`
-    // and never got a working Import button.
     // ------------------------------------------
 
-    const importButton = document.getElementById("import");
-    const csvInput = document.getElementById("csv-input");
+    const importButton =
+        document.getElementById("import");
 
-    const registerVehicleButton = document.getElementById("register-vehicle-button");
+    const csvInput =
+        document.getElementById("csv-input");
 
-    // Only the make/model/year/mileage columns are required.
-    // The rest are optional and default to empty.
+    const registerVehicleButton =
+        document.getElementById("register-vehicle-button");
+
+
     const requiredHeaders = [
         "make",
         "model",
@@ -89,27 +89,42 @@ document.addEventListener("DOMContentLoaded", async function () {
         "image_url"
     ];
 
+
     if (importButton && csvInput) {
 
         importButton.addEventListener("click", function () {
-            // Reset so choosing the same file twice still fires "change".
+
             csvInput.value = "";
             csvInput.click();
+
         });
 
-        // Attached once, instead of on every button click.
         csvInput.addEventListener("change", readFile);
     }
 
-    registerVehicleButton.addEventListener("click", function () {
-        window.location.href = "/web/register_vehicle.html";
-    });
+
+    if (registerVehicleButton) {
+
+        registerVehicleButton.addEventListener(
+            "click",
+            function () {
+
+                window.location.href =
+                    "/web/register_vehicle.html";
+
+            }
+        );
+    }
 
 
-    // Parse CSV while respecting quoted fields.
+    // ------------------------------------------
+    // CSV PARSER
+    // ------------------------------------------
+
     function parseCSV(text) {
 
         const rows = [];
+
         let row = [];
         let value = "";
         let insideQuotes = false;
@@ -119,23 +134,42 @@ document.addEventListener("DOMContentLoaded", async function () {
             const char = text[i];
             const nextChar = text[i + 1];
 
-            if (char === '"' && insideQuotes && nextChar === '"') {
+            if (
+                char === '"' &&
+                insideQuotes &&
+                nextChar === '"'
+            ) {
+
                 value += '"';
                 i++;
+
             }
 
             else if (char === '"') {
+
                 insideQuotes = !insideQuotes;
+
             }
 
-            else if (char === "," && !insideQuotes) {
+            else if (
+                char === "," &&
+                !insideQuotes
+            ) {
+
                 row.push(value.trim());
                 value = "";
+
             }
 
-            else if ((char === "\n" || char === "\r") && !insideQuotes) {
+            else if (
+                (char === "\n" || char === "\r") &&
+                !insideQuotes
+            ) {
 
-                if (char === "\r" && nextChar === "\n") {
+                if (
+                    char === "\r" &&
+                    nextChar === "\n"
+                ) {
                     i++;
                 }
 
@@ -147,16 +181,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 row = [];
                 value = "";
+
             }
 
             else {
+
                 value += char;
+
             }
         }
 
+
         if (insideQuotes) {
-            throw new Error("The CSV contains an unclosed quotation mark.");
+
+            throw new Error(
+                "The CSV contains an unclosed quotation mark."
+            );
         }
+
 
         row.push(value.trim());
 
@@ -168,6 +210,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
 
+    // ------------------------------------------
+    // READ CSV FILE
+    // ------------------------------------------
+
     async function readFile() {
 
         const file = csvInput.files[0];
@@ -177,9 +223,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         if (!file.name.toLowerCase().endsWith(".csv")) {
+
             alert("Please select a CSV file.");
+
             return;
         }
+
 
         try {
 
@@ -188,79 +237,100 @@ document.addEventListener("DOMContentLoaded", async function () {
             const rows = parseCSV(csvText);
 
             if (rows.length < 2) {
+
                 throw new Error(
                     "The CSV does not contain any vehicle records."
                 );
             }
 
-            // Extract column names (strip BOM, normalize case/spacing).
+
+            // Extract and normalize column names.
             const headers = rows[0].map(header =>
+
                 header
                     .replace(/^﻿/, "")
                     .trim()
                     .toLowerCase()
                     .replace(/[\s-]+/g, "_")
+
             );
 
-            const missingHeaders = requiredHeaders.filter(
-                header => !headers.includes(header)
-            );
+
+            const missingHeaders =
+                requiredHeaders.filter(
+                    header => !headers.includes(header)
+                );
+
 
             if (missingHeaders.length > 0) {
+
                 throw new Error(
-                    "Missing CSV columns: " + missingHeaders.join(", ")
+                    "Missing CSV columns: " +
+                    missingHeaders.join(", ")
                 );
             }
 
+
             // Convert CSV rows into vehicle objects.
-            const vehicles = rows.slice(1).map((row, index) => {
+            const vehicles = rows.slice(1).map(
+                (row, index) => {
 
-                // Allow rows with trailing empty cells trimmed off,
-                // but reject rows with extra data.
-                if (row.length > headers.length) {
-                    throw new Error(
-                        `Row ${index + 2} has more columns than the header row.`
-                    );
-                }
+                    if (row.length > headers.length) {
 
-                const vehicle = {};
-
-                headers.forEach((header, columnIndex) => {
-                    if (knownHeaders.includes(header)) {
-                        vehicle[header] = row[columnIndex] ?? "";
+                        throw new Error(
+                            `Row ${index + 2} has more columns than the header row.`
+                        );
                     }
-                });
 
-                return vehicle;
-            });
+                    const vehicle = {};
+
+                    headers.forEach(
+                        (header, columnIndex) => {
+
+                            if (knownHeaders.includes(header)) {
+
+                                vehicle[header] =
+                                    row[columnIndex] ?? "";
+
+                            }
+                        }
+                    );
+
+                    return vehicle;
+                }
+            );
+
 
             // Send vehicles to the backend.
-            // NOTE: must match the route the GET request uses
-            // (/api/vehicle, singular). The old "/api/vehicles/import"
-            // path did not exist, so Express returned an HTML 404 page,
-            // which produced "Server returned something other than JSON".
-            const response = await fetch("/api/vehicle/import", {
+            const response = await fetch(
+                "/api/vehicle/import",
+                {
+                    method: "POST",
 
-                method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                    credentials: "include",
 
-                credentials: "include",
+                    body: JSON.stringify({
+                        vehicles: vehicles
+                    })
+                }
+            );
 
-                body: JSON.stringify({
-                    vehicles: vehicles
-                })
-            });
 
-            const responseText = await response.text();
+            const responseText =
+                await response.text();
 
             let data;
 
             try {
+
                 data = JSON.parse(responseText);
+
             } catch (parseError) {
+
                 console.error(
                     "Import response was not JSON:",
                     response.status,
@@ -273,50 +343,60 @@ document.addEventListener("DOMContentLoaded", async function () {
                 );
             }
 
+
             if (!response.ok || !data.success) {
+
                 throw new Error(
                     data.message || "Vehicle import failed."
                 );
             }
+
 
             alert(data.message);
 
             // Refresh vehicle information from the database.
             window.location.reload();
 
+
         } catch (error) {
 
             console.error("CSV import error:", error);
 
             alert("Import failed: " + error.message);
+
         }
     }
 
 
+    // ------------------------------------------
+    // LOAD VEHICLES
+    // ------------------------------------------
+
     try {
 
-        // ------------------------------------------
-        // LOAD VEHICLES
-        // ------------------------------------------
-
-        const response =
-            await fetch("/api/vehicle", {
+        const response = await fetch(
+            "/api/vehicle",
+            {
                 credentials: "include"
-            });
+            }
+        );
+
 
         if (!response.ok) {
+
             throw new Error(
                 "Could not load vehicles."
             );
         }
 
-        const data =
-            await response.json();
+
+        const data = await response.json();
+
 
         if (!data.success) {
+
             throw new Error(
-                data.message ||
-                "Could not load vehicles."
+                data.message || "Could not load vehicles."
             );
         }
 
@@ -332,6 +412,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (vehicles.length === 0) {
 
             if (vehicleList) {
+
                 vehicleList.innerHTML = `
                     <div class="empty-state-small">
                         No vehicles found.
@@ -340,8 +421,39 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
 
             if (vehicleTitle) {
-                vehicleTitle.textContent =
-                    "No vehicle found";
+                vehicleTitle.textContent = "No vehicle found";
+            }
+
+            if (vehicleNickname) {
+                vehicleNickname.textContent = "";
+            }
+
+            if (vehicleMileage) {
+                vehicleMileage.textContent = "";
+            }
+
+            if (vehicleVin) {
+                vehicleVin.textContent = "";
+            }
+
+            if (vehicleTrim) {
+                vehicleTrim.textContent = "";
+            }
+
+            if (vehicleEngine) {
+                vehicleEngine.textContent = "";
+            }
+
+            if (vehicleTransmission) {
+                vehicleTransmission.textContent = "";
+            }
+
+            if (vehicleBodyType) {
+                vehicleBodyType.textContent = "";
+            }
+
+            if (typeof window.initializeVehicleGallery === "function") {
+                window.initializeVehicleGallery(null);
             }
 
             return;
@@ -354,20 +466,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         let selectedVehicleId =
             Number(
-                localStorage.getItem(
-                    "selectedVehicleId"
-                )
+                localStorage.getItem("selectedVehicleId")
             );
+
 
         let vehicle =
             vehicles.find(function (v) {
-                return Number(v.id) ===
-                    selectedVehicleId;
+
+                return Number(v.id) === selectedVehicleId;
+
             });
 
 
-        // Fall back to first vehicle
-
+        // Fall back to first vehicle if the saved
+        // vehicle no longer belongs to this user.
         if (!vehicle) {
 
             vehicle = vehicles[0];
@@ -377,7 +489,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             localStorage.setItem(
                 "selectedVehicleId",
-                selectedVehicleId
+                String(selectedVehicleId)
             );
         }
 
@@ -396,19 +508,17 @@ document.addEventListener("DOMContentLoaded", async function () {
                     document.createElement("a");
 
                 card.href =
-                    `/web/vehicle.html`;
+                    "/web/vehicle.html";
 
                 card.className =
                     "vehicle-list-card" +
                     (
-                        Number(v.id) ===
-                        Number(vehicle.id)
+                        Number(v.id) === Number(vehicle.id)
                             ? " selected"
                             : ""
                     );
 
-                card.dataset.vehicleId =
-                    v.id;
+                card.dataset.vehicleId = v.id;
 
 
                 const strong =
@@ -433,9 +543,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 mileage.textContent =
                     v.current_mileage !== null &&
                     v.current_mileage !== undefined
-                        ? `${Number(
-                            v.current_mileage
-                        ).toLocaleString()} miles`
+                        ? `${Number(v.current_mileage).toLocaleString()} miles`
                         : "Mileage unavailable";
 
 
@@ -444,13 +552,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 card.appendChild(mileage);
 
 
+                // Save selection before navigating.
                 card.addEventListener(
                     "click",
                     function () {
 
                         localStorage.setItem(
                             "selectedVehicleId",
-                            v.id
+                            String(v.id)
                         );
 
                     }
@@ -458,6 +567,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
                 vehicleList.appendChild(card);
+
             });
         }
 
@@ -472,46 +582,64 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `${vehicle.model_year} ${vehicle.make} ${vehicle.model}`;
         }
 
+
         if (vehicleNickname) {
 
             vehicleNickname.textContent =
                 vehicle.nickname || "";
         }
 
+
         if (vehicleMileage) {
 
             vehicleMileage.textContent =
                 vehicle.current_mileage !== null &&
                 vehicle.current_mileage !== undefined
-                    ? `${Number(
-                        vehicle.current_mileage
-                    ).toLocaleString()} mi`
+                    ? `${Number(vehicle.current_mileage).toLocaleString()} mi`
                     : "";
         }
 
+
         if (vehicleVin) {
-            vehicleVin.textContent =
-                vehicle.vin || "";
+            vehicleVin.textContent = vehicle.vin || "";
         }
+
 
         if (vehicleTrim) {
-            vehicleTrim.textContent =
-                vehicle.trim || "";
+            vehicleTrim.textContent = vehicle.trim || "";
         }
 
+
         if (vehicleEngine) {
-            vehicleEngine.textContent =
-                vehicle.engine || "";
+            vehicleEngine.textContent = vehicle.engine || "";
         }
+
 
         if (vehicleTransmission) {
             vehicleTransmission.textContent =
                 vehicle.transmission || "";
         }
 
+
         if (vehicleBodyType) {
             vehicleBodyType.textContent =
                 vehicle.body_type || "";
+        }
+
+
+        // ------------------------------------------
+        // VEHICLE PHOTO GALLERY
+        // ------------------------------------------
+
+        if (typeof window.initializeVehicleGallery === "function") {
+
+            window.initializeVehicleGallery(vehicle);
+
+        } else {
+
+            console.error(
+                "Vehicle gallery component was not loaded."
+            );
         }
 
 
@@ -522,6 +650,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const valueContainer =
             document.getElementById("vehicle-value");
 
+
         if (valueContainer) {
 
             /*
@@ -530,18 +659,14 @@ document.addEventListener("DOMContentLoaded", async function () {
              * exists elsewhere in the project.
              */
 
-            if (
-                typeof renderValueCard ===
-                "function"
-            ) {
+            if (typeof renderValueCard === "function") {
+
                 valueContainer.innerHTML =
                     renderValueCard();
             }
 
-            if (
-                typeof loadValueCard ===
-                "function"
-            ) {
+            if (typeof loadValueCard === "function") {
+
                 loadValueCard(vehicle);
             }
         }
@@ -554,6 +679,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             error
         );
 
+
         if (vehicleList) {
 
             vehicleList.innerHTML = `
@@ -562,6 +688,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 </div>
             `;
         }
+
 
         if (vehicleTitle) {
 

@@ -5,7 +5,7 @@
  *
  * Responsibilities:
  * - Load dashboard information for the authenticated user.
- * - Load the user's vehicle information.
+ * - Load the selected vehicle's information.
  * - Load the next scheduled maintenance service.
  * - Load yearly maintenance information.
  * - Load vehicle status information.
@@ -29,19 +29,42 @@ const router = express.Router();
 
 
 // GET /api/dashboard
+// Optional query parameter: ?vehicleId=123
+
 router.get("/", requireLogin, async (req, res) => {
 
     try {
 
         const userId = req.session.user.id;
 
+        const requestedVehicleId =
+            req.query.vehicleId;
+
 
         // --------------------------------------------------
-        // USER + VEHICLE
+        // VALIDATE REQUESTED VEHICLE ID
         // --------------------------------------------------
 
-        const [vehicleRows] = await db.query(
-            `
+        if (
+            requestedVehicleId !== undefined &&
+            (
+                !/^\d+$/.test(String(requestedVehicleId)) ||
+                Number(requestedVehicleId) <= 0
+            )
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid vehicle ID."
+            });
+        }
+
+
+        // --------------------------------------------------
+        // USER + SELECTED VEHICLE
+        // --------------------------------------------------
+
+        let vehicleQuery = `
             SELECT
                 v.id,
                 v.vin,
@@ -59,14 +82,49 @@ router.get("/", requireLogin, async (req, res) => {
             INNER JOIN user_vehicles uv
                 ON uv.vehicle_id = v.id
             WHERE uv.user_id = ?
+        `;
+
+        const vehicleParams = [userId];
+
+        if (requestedVehicleId !== undefined) {
+
+            vehicleQuery += `
+                AND v.id = ?
+            `;
+
+            vehicleParams.push(Number(requestedVehicleId));
+        }
+
+        vehicleQuery += `
             ORDER BY v.id
             LIMIT 1
-            `,
-            [userId]
+        `;
+
+        const [vehicleRows] = await db.query(
+            vehicleQuery,
+            vehicleParams
         );
 
 
+        // A specifically requested vehicle must belong to the user.
+        if (
+            requestedVehicleId !== undefined &&
+            vehicleRows.length === 0
+        ) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found."
+            });
+        }
+
+
+        // --------------------------------------------------
+        // NO VEHICLES
+        // --------------------------------------------------
+
         if (vehicleRows.length === 0) {
+
             return res.json({
                 success: true,
                 user: req.session.user,
@@ -74,7 +132,10 @@ router.get("/", requireLogin, async (req, res) => {
                 upcomingMaintenance: [],
                 history: [],
                 nextService: null,
-                maintenanceThisYear: 0,
+                maintenanceThisYear: {
+                    services_completed: 0,
+                    total_cost_cents: 0
+                },
                 vehicleStatus: "good"
             });
         }
@@ -213,19 +274,12 @@ router.get("/", requireLogin, async (req, res) => {
 
         res.json({
             success: true,
-
             user: req.session.user,
-
-            vehicle: vehicle,
-
-            nextService: nextService,
-
-            maintenanceThisYear: maintenanceThisYear,
-
-            vehicleStatus: vehicleStatus,
-
+            vehicle,
+            nextService,
+            maintenanceThisYear,
+            vehicleStatus,
             upcomingMaintenance: upcomingRows,
-
             history: historyRows
         });
 

@@ -1,4 +1,3 @@
-
 /*
  * Filename: /client/js/pages/dashboard.js
  *
@@ -7,13 +6,13 @@
  * Responsibilities:
  * - Request dashboard data from the server API.
  * - Display the authenticated user's information.
- * - Display the user's vehicle information.
+ * - Allow the user to switch between vehicles.
+ * - Remember the selected vehicle using localStorage.
  * - Load and control the vehicle photo gallery.
- * - Upload additional vehicle photos.
+ * - Display vehicle valuation information.
  * - Display upcoming maintenance.
  * - Display maintenance history.
  * - Display vehicle maintenance status.
- * - Update dashboard elements using database-backed API data.
  *
  * This file does NOT:
  * - Query MySQL directly.
@@ -23,6 +22,14 @@
  * Dashboard data is provided by /server/routes/dashboard.js.
  * Vehicle photos are provided by /server/routes/vehicle-photos.js.
  */
+
+
+// --------------------------------------------------
+// CONFIGURATION
+// --------------------------------------------------
+
+const SELECTED_VEHICLE_STORAGE_KEY =
+    "selectedVehicleId";
 
 
 // --------------------------------------------------
@@ -42,279 +49,22 @@ function localDate(value) {
 
 
 // --------------------------------------------------
-// VEHICLE PHOTO GALLERY
+// MONEY FORMATTING
 // --------------------------------------------------
 
-function initializeVehicleGallery(vehicle) {
+function dashboardMoney(value) {
 
-    const carousel = document.querySelector(".vehicle-carousel");
-    const vehiclePhoto = document.getElementById("vehiclePhoto");
-    const previousButton = document.getElementById("previousButton");
-    const nextButton = document.getElementById("nextButton");
-    const photoNumber = document.getElementById("photoNumber");
-    const uploadInput = document.getElementById("vehicleUpload");
-    const uploadButton = document.querySelector(".upload-button");
-
-    if (!carousel || !vehiclePhoto) {
-        return;
+    if (typeof formatMoney === "function") {
+        return formatMoney(value);
     }
 
-    let photos = [];
-    let currentPhotoIndex = 0;
-    let uploading = false;
-
-    // Create the empty-gallery placeholder if it does not exist.
-    let emptyState = carousel.querySelector(".vehicle-photo-empty");
-
-    if (!emptyState) {
-
-        emptyState = document.createElement("div");
-
-        emptyState.className = "vehicle-photo-empty";
-
-        emptyState.textContent = "No vehicle photos yet";
-
-        carousel.appendChild(emptyState);
-    }
-
-
-    // --------------------------------------------------
-    // RENDER CURRENT PHOTO
-    // --------------------------------------------------
-
-    function renderPhoto() {
-
-        const hasPhotos = photos.length > 0;
-
-        if (!hasPhotos) {
-
-            vehiclePhoto.removeAttribute("src");
-            vehiclePhoto.style.display = "none";
-
-            emptyState.style.display = "flex";
-
-            if (photoNumber) {
-                photoNumber.textContent = "0 / 0";
-            }
-
-            if (previousButton) {
-                previousButton.disabled = true;
-            }
-
-            if (nextButton) {
-                nextButton.disabled = true;
-            }
-
-            return;
+    return Number(value || 0).toLocaleString(
+        undefined,
+        {
+            style: "currency",
+            currency: "USD"
         }
-
-        const photo = photos[currentPhotoIndex];
-
-        vehiclePhoto.style.display = "block";
-        emptyState.style.display = "none";
-
-        vehiclePhoto.alt =
-            `${vehicle.make} ${vehicle.model} photo ${currentPhotoIndex + 1}`;
-
-        vehiclePhoto.onerror = () => {
-            vehiclePhoto.style.display = "none";
-            emptyState.textContent = "This photo could not be loaded.";
-            emptyState.style.display = "flex";
-        };
-
-        vehiclePhoto.src = photo.image_url;
-
-        if (photoNumber) {
-
-            photoNumber.textContent =
-                `${currentPhotoIndex + 1} / ${photos.length}`;
-        }
-
-        const multiplePhotos = photos.length > 1;
-
-        if (previousButton) {
-            previousButton.disabled = !multiplePhotos;
-        }
-
-        if (nextButton) {
-            nextButton.disabled = !multiplePhotos;
-        }
-    }
-
-
-    // --------------------------------------------------
-    // LOAD PHOTOS FROM SERVER
-    // --------------------------------------------------
-
-    async function loadPhotos() {
-
-        try {
-
-            const response = await fetch(
-                `/api/vehicle-photos/${vehicle.id}`,
-                {
-                    credentials: "include"
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-
-                throw new Error(
-                    data.message || "Could not load vehicle photos."
-                );
-            }
-
-            photos = Array.isArray(data.photos)
-                ? data.photos
-                : [];
-
-            currentPhotoIndex = 0;
-
-            renderPhoto();
-
-        } catch (error) {
-
-            console.error("Vehicle gallery error:", error);
-
-            photos = [];
-
-            emptyState.textContent =
-                "Could not load vehicle photos.";
-
-            renderPhoto();
-        }
-    }
-
-
-    // --------------------------------------------------
-    // PREVIOUS PHOTO
-    // --------------------------------------------------
-
-    if (previousButton) {
-
-        previousButton.addEventListener("click", () => {
-
-            if (photos.length <= 1) {
-                return;
-            }
-
-            currentPhotoIndex =
-                (currentPhotoIndex - 1 + photos.length) % photos.length;
-
-            renderPhoto();
-        });
-    }
-
-
-    // --------------------------------------------------
-    // NEXT PHOTO
-    // --------------------------------------------------
-
-    if (nextButton) {
-
-        nextButton.addEventListener("click", () => {
-
-            if (photos.length <= 1) {
-                return;
-            }
-
-            currentPhotoIndex =
-                (currentPhotoIndex + 1) % photos.length;
-
-            renderPhoto();
-        });
-    }
-
-
-    // --------------------------------------------------
-    // UPLOAD PHOTOS
-    // --------------------------------------------------
-
-    if (uploadInput) {
-
-        uploadInput.addEventListener("change", async () => {
-
-            const selectedFiles = Array.from(uploadInput.files || []);
-
-            if (selectedFiles.length === 0 || uploading) {
-                return;
-            }
-
-            if (selectedFiles.length > 10) {
-
-                alert("You can upload a maximum of 10 photos at once.");
-
-                uploadInput.value = "";
-
-                return;
-            }
-
-            const formData = new FormData();
-
-            selectedFiles.forEach(file => {
-                formData.append("photos", file);
-            });
-
-            uploading = true;
-
-            if (uploadButton) {
-
-                uploadButton.classList.add("uploading");
-                uploadButton.setAttribute("aria-busy", "true");
-            }
-
-            try {
-
-                const response = await fetch(
-                    `/api/vehicle-photos/${vehicle.id}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        body: formData
-                    }
-                );
-
-                const data = await response.json();
-
-                if (!response.ok || !data.success) {
-
-                    throw new Error(
-                        data.message || "Could not upload vehicle photos."
-                    );
-                }
-
-                // Reload the complete gallery so the new images
-                // appear in the same order used by the server.
-                await loadPhotos();
-
-                alert("Vehicle photos uploaded successfully.");
-
-            } catch (error) {
-
-                console.error("Vehicle photo upload error:", error);
-
-                alert(error.message || "Could not upload vehicle photos.");
-
-            } finally {
-
-                uploading = false;
-
-                if (uploadButton) {
-
-                    uploadButton.classList.remove("uploading");
-                    uploadButton.removeAttribute("aria-busy");
-                }
-
-                uploadInput.value = "";
-            }
-        });
-    }
-
-
-    // Initial gallery load.
-    loadPhotos();
+    );
 }
 
 
@@ -324,14 +74,45 @@ function initializeVehicleGallery(vehicle) {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-    try {
+    const vehicleSelect =
+        document.getElementById("dashboard-vehicle-select");
 
-        const response = await fetch("/api/dashboard", {
-            credentials: "include"
-        });
+    let dashboardRequestNumber = 0;
+    let valueRequestNumber = 0;
+
+
+    // --------------------------------------------------
+    // USER
+    // --------------------------------------------------
+
+    function renderUser(user) {
+
+        const userElement =
+            document.getElementById("dashboard-user");
+
+        if (userElement && user) {
+
+            userElement.textContent =
+                user.fullName || user.email || "";
+        }
+    }
+
+
+    // --------------------------------------------------
+    // LOAD VEHICLES
+    // --------------------------------------------------
+
+    async function loadVehicles() {
+
+        const response = await fetch(
+            "/api/vehicle",
+            {
+                credentials: "include"
+            }
+        );
 
         if (!response.ok) {
-            throw new Error("Could not load dashboard data.");
+            throw new Error("Could not load vehicles.");
         }
 
         const data = await response.json();
@@ -339,43 +120,63 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!data.success) {
 
             throw new Error(
-                data.message || "Could not load dashboard data."
+                data.message || "Could not load vehicles."
             );
         }
 
+        return data.vehicles || [];
+    }
 
-        // --------------------------------------------------
-        // USER
-        // --------------------------------------------------
 
-        const userElement =
-            document.getElementById("dashboard-user");
+    // --------------------------------------------------
+    // POPULATE VEHICLE SELECTOR
+    // --------------------------------------------------
 
-        if (userElement && data.user) {
+    function populateVehicleSelector(vehicles, selectedId) {
 
-            userElement.textContent =
-                data.user.fullName || data.user.email;
+        if (!vehicleSelect) {
+            return;
         }
 
+        vehicleSelect.replaceChildren();
 
-        // --------------------------------------------------
-        // VEHICLE
-        // --------------------------------------------------
+        if (vehicles.length === 0) {
 
-        if (!data.vehicle) {
+            const option = document.createElement("option");
 
-            console.log("No vehicle found for this user.");
+            option.value = "";
+            option.textContent = "No vehicles";
 
-            initializeVehicleGallery({
-                id: null,
-                make: "",
-                model: ""
-            });
+            vehicleSelect.appendChild(option);
+            vehicleSelect.disabled = true;
 
             return;
         }
 
-        const vehicle = data.vehicle;
+        vehicleSelect.disabled = false;
+
+        vehicles.forEach(vehicle => {
+
+            const option = document.createElement("option");
+
+            option.value = String(vehicle.id);
+
+            option.textContent =
+                vehicle.nickname ||
+                `${vehicle.model_year} ${vehicle.make} ${vehicle.model}`;
+
+            vehicleSelect.appendChild(option);
+        });
+
+        vehicleSelect.value = String(selectedId);
+    }
+
+
+    // --------------------------------------------------
+    // CLEAR DASHBOARD
+    // --------------------------------------------------
+
+    function clearDashboard() {
 
         const vehicleName =
             document.getElementById("dashboard-vehicle-name");
@@ -386,6 +187,113 @@ document.addEventListener("DOMContentLoaded", async () => {
         const mileage =
             document.getElementById("dashboard-mileage");
 
+        const valueAmount =
+            document.querySelector("#value-card .value-amount");
+
+        const valueRange =
+            document.querySelector("#value-card .value-range");
+
+        const nextServiceNumber =
+            document.getElementById("next-service-number");
+
+        const nextServiceSub =
+            document.getElementById("next-service-sub");
+
+        const maintenanceYearNumber =
+            document.getElementById("maintenance-year-number");
+
+        const maintenanceYearSub =
+            maintenanceYearNumber
+                ? maintenanceYearNumber.parentElement.querySelector(".stat-sub")
+                : null;
+
+        const statusElement =
+            document.querySelector(
+                ".stat-card:nth-child(3) .stat-number"
+            );
+
+        if (vehicleName) {
+            vehicleName.textContent = "No vehicle selected";
+        }
+
+        if (vehicleDetails) {
+            vehicleDetails.textContent = "Register a vehicle to get started.";
+        }
+
+        if (mileage) {
+            mileage.textContent = "";
+        }
+
+        if (valueAmount) {
+            valueAmount.textContent = "Unavailable";
+        }
+
+        if (valueRange) {
+            valueRange.textContent = "No vehicle selected.";
+        }
+
+        if (nextServiceNumber) {
+            nextServiceNumber.textContent = "None";
+        }
+
+        if (nextServiceSub) {
+            nextServiceSub.textContent = "No upcoming service";
+        }
+
+        if (maintenanceYearNumber) {
+            maintenanceYearNumber.textContent = "0";
+        }
+
+        if (maintenanceYearSub) {
+            maintenanceYearSub.textContent = "Services completed";
+        }
+
+        if (statusElement) {
+            statusElement.textContent = "Good";
+        }
+
+        const maintenanceList =
+            document.getElementById("dashboard-maintenance-list");
+
+        const history =
+            document.getElementById("dashboard-history");
+
+        if (maintenanceList) {
+            maintenanceList.innerHTML = `
+                <div class="empty-state-small">
+                    No scheduled maintenance.
+                </div>
+            `;
+        }
+
+        if (history) {
+            history.innerHTML = `
+                <div class="empty-state-small">
+                    No maintenance history yet.
+                </div>
+            `;
+        }
+
+        if (typeof window.initializeVehicleGallery === "function") {
+            window.initializeVehicleGallery(null);
+        }
+    }
+
+
+    // --------------------------------------------------
+    // RENDER VEHICLE
+    // --------------------------------------------------
+
+    function renderVehicle(vehicle) {
+
+        const vehicleName =
+            document.getElementById("dashboard-vehicle-name");
+
+        const vehicleDetails =
+            document.getElementById("dashboard-vehicle-details");
+
+        const mileage =
+            document.getElementById("dashboard-mileage");
 
         if (vehicleName) {
 
@@ -403,20 +311,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (mileage) {
 
             mileage.textContent =
-                `${Number(vehicle.current_mileage).toLocaleString()} miles`;
+                vehicle.current_mileage !== null &&
+                vehicle.current_mileage !== undefined
+                    ? `${Number(vehicle.current_mileage).toLocaleString()} miles`
+                    : "Mileage unavailable";
         }
 
-
-        // --------------------------------------------------
-        // VEHICLE PHOTO GALLERY
-        // --------------------------------------------------
-
-        initializeVehicleGallery(vehicle);
+        if (typeof window.initializeVehicleGallery === "function") {
+            window.initializeVehicleGallery(vehicle);
+        }
+    }
 
 
-        // --------------------------------------------------
-        // VEHICLE VALUE
-        // --------------------------------------------------
+    // --------------------------------------------------
+    // LOAD VEHICLE VALUE
+    // --------------------------------------------------
+
+    async function renderVehicleValue(vehicleId, requestNumber) {
 
         const valueAmount =
             document.querySelector("#value-card .value-amount");
@@ -424,240 +335,458 @@ document.addEventListener("DOMContentLoaded", async () => {
         const valueRange =
             document.querySelector("#value-card .value-range");
 
-        if (valueAmount) {
-
-            // Not awaited, so a slow valuation never blocks
-            // the rest of the dashboard from rendering.
-            getVehicleValue(vehicle.id)
-
-                .then(valueData => {
-
-                    if (!valueData) {
-
-                        valueAmount.textContent = "Unavailable";
-
-                        if (valueRange) {
-                            valueRange.textContent =
-                                "No valuation data yet.";
-                        }
-
-                        return;
-                    }
-
-                    valueAmount.textContent =
-                        formatMoney(valueData.value);
-
-                    if (valueRange) {
-
-                        valueRange.textContent =
-                            `${formatMoney(valueData.low)} – ${formatMoney(valueData.high)} • ${valueData.source}`;
-                    }
-                })
-
-                .catch(valueError => {
-
-                    console.error("Vehicle value error:", valueError);
-
-                    valueAmount.textContent = "Unavailable";
-
-                    if (valueRange) {
-                        valueRange.textContent =
-                            "Couldn't load valuation.";
-                    }
-                });
+        if (!valueAmount) {
+            return;
         }
 
+        valueAmount.textContent = "Loading...";
 
-        // --------------------------------------------------
-        // NEXT SERVICE
-        // --------------------------------------------------
+        if (valueRange) {
+            valueRange.textContent = "";
+        }
 
-        const nextServiceNumber =
+        try {
+
+            if (typeof getVehicleValue !== "function") {
+                throw new Error("Vehicle valuation helper is unavailable.");
+            }
+
+            const valueData =
+                await getVehicleValue(vehicleId);
+
+            // Ignore a result belonging to an older selection.
+            if (requestNumber !== valueRequestNumber) {
+                return;
+            }
+
+            if (!valueData) {
+
+                valueAmount.textContent = "Unavailable";
+
+                if (valueRange) {
+                    valueRange.textContent = "No valuation data yet.";
+                }
+
+                return;
+            }
+
+            valueAmount.textContent =
+                dashboardMoney(valueData.value);
+
+            if (valueRange) {
+
+                valueRange.textContent =
+                    `${dashboardMoney(valueData.low)} – ${dashboardMoney(valueData.high)} • ${valueData.source}`;
+            }
+
+        } catch (error) {
+
+            if (requestNumber !== valueRequestNumber) {
+                return;
+            }
+
+            console.error("Vehicle value error:", error);
+
+            valueAmount.textContent = "Unavailable";
+
+            if (valueRange) {
+                valueRange.textContent = "Couldn't load valuation.";
+            }
+        }
+    }
+
+
+    // --------------------------------------------------
+    // RENDER NEXT SERVICE
+    // --------------------------------------------------
+
+    function renderNextService(nextService) {
+
+        const number =
             document.getElementById("next-service-number");
 
-        const nextServiceSub =
+        const sub =
             document.getElementById("next-service-sub");
 
+        if (!number) {
+            return;
+        }
+
         if (
-            nextServiceNumber &&
-            data.nextService &&
-            data.nextService.next_due_mileage
+            nextService &&
+            nextService.next_due_mileage !== null &&
+            nextService.next_due_mileage !== undefined
         ) {
 
-            const dueMileage =
-                Number(data.nextService.next_due_mileage);
+            number.textContent =
+                Number(nextService.next_due_mileage).toLocaleString();
 
-            nextServiceNumber.textContent =
-                dueMileage.toLocaleString();
+            if (sub) {
+                sub.textContent = "miles";
+            }
 
-            if (nextServiceSub) {
-                nextServiceSub.textContent = "miles";
+        } else {
+
+            number.textContent = "None";
+
+            if (sub) {
+                sub.textContent = "No upcoming service";
             }
         }
+    }
 
 
-        // --------------------------------------------------
-        // MAINTENANCE THIS YEAR
-        // --------------------------------------------------
+    // --------------------------------------------------
+    // RENDER YEARLY MAINTENANCE
+    // --------------------------------------------------
 
-        const maintenanceYearNumber =
+    function renderMaintenanceThisYear(maintenance) {
+
+        const number =
             document.getElementById("maintenance-year-number");
 
-        const maintenanceYearSub =
-            maintenanceYearNumber
-                ? maintenanceYearNumber.parentElement.querySelector(".stat-sub")
+        const sub =
+            number
+                ? number.parentElement.querySelector(".stat-sub")
                 : null;
 
-        if (maintenanceYearNumber) {
-
-            const servicesCompleted =
-                Number(data.maintenanceThisYear?.services_completed || 0);
-
-            const totalCost =
-                Number(data.maintenanceThisYear?.total_cost_cents || 0) / 100;
-
-            maintenanceYearNumber.textContent =
-                servicesCompleted.toLocaleString();
-
-            if (maintenanceYearSub) {
-
-                maintenanceYearSub.textContent =
-                    `${servicesCompleted === 1 ? "Service" : "Services"} completed • $${totalCost.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })} spent`;
-            }
+        if (!number) {
+            return;
         }
 
+        const servicesCompleted =
+            Number(maintenance?.services_completed || 0);
 
-        // --------------------------------------------------
-        // VEHICLE STATUS
-        // --------------------------------------------------
+        const totalCost =
+            Number(maintenance?.total_cost_cents || 0) / 100;
+
+        number.textContent =
+            servicesCompleted.toLocaleString();
+
+        if (sub) {
+
+            sub.textContent =
+                `${servicesCompleted === 1 ? "Service" : "Services"} completed • ${dashboardMoney(totalCost)} spent`;
+        }
+    }
+
+
+    // --------------------------------------------------
+    // RENDER VEHICLE STATUS
+    // --------------------------------------------------
+
+    function renderVehicleStatus(status) {
 
         const statusElement =
             document.querySelector(
                 ".stat-card:nth-child(3) .stat-number"
             );
 
-        if (statusElement) {
-
-            const status =
-                data.vehicleStatus || "good";
-
-            statusElement.textContent =
-                status.charAt(0).toUpperCase() +
-                status.slice(1);
+        if (!statusElement) {
+            return;
         }
 
+        const normalizedStatus =
+            String(status || "good");
 
-        // --------------------------------------------------
-        // UPCOMING MAINTENANCE
-        // --------------------------------------------------
+        statusElement.textContent =
+            normalizedStatus.charAt(0).toUpperCase() +
+            normalizedStatus.slice(1);
+    }
+
+
+    // --------------------------------------------------
+    // RENDER UPCOMING MAINTENANCE
+    // --------------------------------------------------
+
+    function renderUpcomingMaintenance(items) {
 
         const maintenanceList =
             document.getElementById("dashboard-maintenance-list");
 
-        if (maintenanceList) {
-
-            maintenanceList.innerHTML = "";
-
-            if (
-                !data.upcomingMaintenance ||
-                data.upcomingMaintenance.length === 0
-            ) {
-
-                maintenanceList.innerHTML = `
-                    <div class="empty-state-small">
-                        No scheduled maintenance.
-                    </div>
-                `;
-
-            } else {
-
-                data.upcomingMaintenance.forEach(item => {
-
-                    const element =
-                        document.createElement("div");
-
-                    element.className = "maintenance-item";
-
-                    const title = document.createElement("strong");
-                    title.textContent = item.maintenance_name;
-
-                    const detail = document.createElement("span");
-
-                    detail.textContent =
-                        item.due_mileage
-                            ? `Due at ${Number(item.due_mileage).toLocaleString()} miles`
-                            : item.due_date
-                                ? `Due ${localDate(item.due_date)}`
-                                : "Scheduled maintenance";
-
-                    element.appendChild(title);
-                    element.appendChild(detail);
-
-                    maintenanceList.appendChild(element);
-                });
-            }
+        if (!maintenanceList) {
+            return;
         }
 
+        maintenanceList.replaceChildren();
 
-        // --------------------------------------------------
-        // MAINTENANCE HISTORY
-        // --------------------------------------------------
+        if (!items || items.length === 0) {
+
+            maintenanceList.innerHTML = `
+                <div class="empty-state-small">
+                    No scheduled maintenance.
+                </div>
+            `;
+
+            return;
+        }
+
+        items.forEach(item => {
+
+            const element =
+                document.createElement("div");
+
+            element.className = "maintenance-item";
+
+            const title =
+                document.createElement("strong");
+
+            title.textContent =
+                item.maintenance_name || "Maintenance";
+
+            const detail =
+                document.createElement("span");
+
+            detail.textContent =
+                item.due_mileage
+                    ? `Due at ${Number(item.due_mileage).toLocaleString()} miles`
+                    : item.due_date
+                        ? `Due ${localDate(item.due_date)}`
+                        : "Scheduled maintenance";
+
+            element.appendChild(title);
+            element.appendChild(detail);
+
+            maintenanceList.appendChild(element);
+        });
+    }
+
+
+    // --------------------------------------------------
+    // RENDER MAINTENANCE HISTORY
+    // --------------------------------------------------
+
+    function renderMaintenanceHistory(items) {
 
         const history =
             document.getElementById("dashboard-history");
 
-        if (history) {
+        if (!history) {
+            return;
+        }
 
-            history.innerHTML = "";
+        history.replaceChildren();
+
+        if (!items || items.length === 0) {
+
+            history.innerHTML = `
+                <div class="empty-state-small">
+                    No maintenance history yet.
+                </div>
+            `;
+
+            return;
+        }
+
+        items.forEach(item => {
+
+            const element =
+                document.createElement("div");
+
+            element.className = "maintenance-item";
+
+            const title =
+                document.createElement("strong");
+
+            title.textContent =
+                item.maintenance_name || "Maintenance";
+
+            const detail =
+                document.createElement("span");
+
+            detail.textContent =
+                localDate(item.service_date) +
+                (
+                    item.mileage_at_service
+                        ? ` • ${Number(item.mileage_at_service).toLocaleString()} miles`
+                        : ""
+                );
+
+            element.appendChild(title);
+            element.appendChild(detail);
+
+            history.appendChild(element);
+        });
+    }
+
+
+    // --------------------------------------------------
+    // LOAD SELECTED VEHICLE DASHBOARD
+    // --------------------------------------------------
+
+    async function loadDashboard(vehicleId) {
+
+        const requestNumber =
+            ++dashboardRequestNumber;
+
+        const currentValueRequest =
+            ++valueRequestNumber;
+
+        const url = vehicleId
+            ? `/api/dashboard?vehicleId=${encodeURIComponent(vehicleId)}`
+            : "/api/dashboard";
+
+        try {
+
+            const response = await fetch(
+                url,
+                {
+                    credentials: "include"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Could not load dashboard data.");
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.message || "Could not load dashboard data."
+                );
+            }
+
+            // Ignore stale dashboard responses.
+            if (requestNumber !== dashboardRequestNumber) {
+                return;
+            }
+
+            renderUser(data.user);
+
+            if (!data.vehicle) {
+                clearDashboard();
+                return;
+            }
+
+            const vehicle = data.vehicle;
+
+            // Keep the selector and saved selection synchronized.
+            localStorage.setItem(
+                SELECTED_VEHICLE_STORAGE_KEY,
+                String(vehicle.id)
+            );
 
             if (
-                !data.history ||
-                data.history.length === 0
+                vehicleSelect &&
+                vehicleSelect.value !== String(vehicle.id)
             ) {
-
-                history.innerHTML = `
-                    <div class="empty-state-small">
-                        No maintenance history yet.
-                    </div>
-                `;
-
-            } else {
-
-                data.history.forEach(item => {
-
-                    const element =
-                        document.createElement("div");
-
-                    element.className = "maintenance-item";
-
-                    const title = document.createElement("strong");
-                    title.textContent = item.maintenance_name;
-
-                    const detail = document.createElement("span");
-
-                    detail.textContent =
-                        localDate(item.service_date) +
-                        (
-                            item.mileage_at_service
-                                ? ` • ${Number(item.mileage_at_service).toLocaleString()} miles`
-                                : ""
-                        );
-
-                    element.appendChild(title);
-                    element.appendChild(detail);
-
-                    history.appendChild(element);
-                });
+                vehicleSelect.value = String(vehicle.id);
             }
+
+            renderVehicle(vehicle);
+
+            renderNextService(data.nextService);
+
+            renderMaintenanceThisYear(
+                data.maintenanceThisYear
+            );
+
+            renderVehicleStatus(data.vehicleStatus);
+
+            renderUpcomingMaintenance(
+                data.upcomingMaintenance
+            );
+
+            renderMaintenanceHistory(
+                data.history
+            );
+
+            renderVehicleValue(
+                vehicle.id,
+                currentValueRequest
+            );
+
+        } catch (error) {
+
+            if (requestNumber !== dashboardRequestNumber) {
+                return;
+            }
+
+            console.error(
+                "Dashboard loading error:",
+                error
+            );
+        }
+    }
+
+
+    // --------------------------------------------------
+    // INITIALIZE DASHBOARD
+    // --------------------------------------------------
+
+    try {
+
+        const vehicles =
+            await loadVehicles();
+
+        let selectedVehicleId =
+            localStorage.getItem(
+                SELECTED_VEHICLE_STORAGE_KEY
+            );
+
+        let selectedVehicle =
+            vehicles.find(vehicle =>
+                String(vehicle.id) === String(selectedVehicleId)
+            );
+
+        // If the saved vehicle no longer belongs to this user,
+        // select the first available vehicle instead.
+        if (!selectedVehicle && vehicles.length > 0) {
+
+            selectedVehicle = vehicles[0];
+
+            selectedVehicleId =
+                String(selectedVehicle.id);
+
+            localStorage.setItem(
+                SELECTED_VEHICLE_STORAGE_KEY,
+                selectedVehicleId
+            );
+        }
+
+        if (vehicleSelect) {
+
+            populateVehicleSelector(
+                vehicles,
+                selectedVehicleId
+            );
+
+            vehicleSelect.addEventListener(
+                "change",
+                function () {
+
+                    const newVehicleId =
+                        vehicleSelect.value;
+
+                    if (!newVehicleId) {
+                        return;
+                    }
+
+                    localStorage.setItem(
+                        SELECTED_VEHICLE_STORAGE_KEY,
+                        newVehicleId
+                    );
+
+                    loadDashboard(newVehicleId);
+                }
+            );
+        }
+
+        if (selectedVehicle) {
+
+            await loadDashboard(selectedVehicle.id);
+
+        } else {
+
+            clearDashboard();
         }
 
     } catch (error) {
 
         console.error(
-            "Dashboard loading error:",
+            "Dashboard initialization error:",
             error
         );
     }
