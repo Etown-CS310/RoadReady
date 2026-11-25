@@ -541,33 +541,3 @@ async function loadValueCard(vehicle) {
         `;
     }
 }
-// Dark Mode
-document.addEventListener("DOMContentLoaded", () => {
-    const themeButton = document.getElementById("theme-toggle");
-
-    if (!themeButton) return;
-
-    // Load the saved theme
-    const savedTheme = localStorage.getItem("roadready-theme");
-
-    if (savedTheme === "dark") {
-        document.body.classList.add("dark-mode");
-        themeButton.textContent = "☀️ Light Mode";
-    }
-
-    // Switch themes when clicked
-    themeButton.addEventListener("click", () => {
-        document.body.classList.toggle("dark-mode");
-
-        const isDarkMode = document.body.classList.contains("dark-mode");
-
-        localStorage.setItem(
-            "roadready-theme",
-            isDarkMode ? "dark" : "light"
-        );
-
-        themeButton.textContent = isDarkMode
-            ? "☀️ Light Mode"
-            : "🌙 Dark Mode";
-    });
-});

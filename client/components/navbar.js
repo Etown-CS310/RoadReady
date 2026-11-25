@@ -7,6 +7,7 @@
  * - Create the shared site navigation.
  * - Provide navigation links between RoadReady pages.
  * - Provide consistent navigation markup across the application.
+ * - Provide the dark/light theme toggle button.
  *
  * This file does NOT:
  * - Query MySQL.
@@ -14,7 +15,40 @@
  * - Load page-specific application data.
  */
 
+// Dark Mode
+function initThemeToggle() {
+    const themeButton = document.getElementById("theme-toggle");
+
+    if (!themeButton) return;
+
+    // Set the button label to match the current theme
+    themeButton.textContent = document.body.classList.contains("dark-mode")
+        ? "☀️ Light Mode"
+        : "🌙 Dark Mode";
+
+    // Switch themes when clicked
+    themeButton.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+
+        const isDarkMode = document.body.classList.contains("dark-mode");
+
+        localStorage.setItem(
+            "roadready-theme",
+            isDarkMode ? "dark" : "light"
+        );
+
+        themeButton.textContent = isDarkMode
+            ? "☀️ Light Mode"
+            : "🌙 Dark Mode";
+    });
+}
+
 async function renderNavbar() {
+
+    // Load the saved theme right away (before the fetch below) to avoid a flash
+    if (localStorage.getItem("roadready-theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
 
     const currentPage = window.location.pathname.split("/").pop();
 
@@ -99,6 +133,10 @@ async function renderNavbar() {
 
             <div class="sidebar-bottom">
 
+                <!-- Theme -->
+                <button id="theme-toggle" class="btn btn-secondary">
+                    🌙 Dark Mode
+                </button>
 
                 <div class="sidebar-user">
                     <i class="fa-solid fa-user nav-icon"></i>
@@ -132,6 +170,9 @@ async function renderNavbar() {
         "afterbegin",
         navbar
     );
+
+    // The button exists in the DOM now, so hook it up
+    initThemeToggle();
 }
 
 document.addEventListener(
