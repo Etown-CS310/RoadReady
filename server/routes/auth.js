@@ -26,6 +26,15 @@ const bcrypt = require("bcryptjs");
 
 const db = require("../db");
 
+const { OAuth2Client } = require("google-auth-library");
+const crypto = require("crypto");
+
+const googleClient = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_CALLBACK_URL
+);
+
 const { requireLogin } = require("../middleware/auth");
 
 const router = express.Router();
@@ -434,6 +443,131 @@ router.get("/me", (req, res) => {
         success: true,
         user: req.session.user
     });
+});
+
+
+
+/* GOOGLE SIGN IN */
+
+// Step 1: Send user to Google
+
+router.get("/google", (req, res) => {
+
+    const state = crypto.randomBytes(16).toString("hex");
+
+    req.session.googleState = state;
+
+    req.session.save((error) => {
+
+        if (error) {
+            console.error("Session save error:", error);
+            return res.status(500).send("Could not start Google login.");
+        }
+
+        const url = googleClient.generateAuthUrl({
+            access_type: "online",
+            scope: ["email", "profile"],
+            state: state,
+            redirect_uri: process.env.GOOGLE_CALLBACK_URL
+        });
+
+        res.redirect(url);
+    });
+});
+
+
+
+// Step 2: Google sends user back to RoadReady
+router.get("/google/callback", async (req, res) => {
+
+    try {
+
+        // Check security state
+        if (
+            !req.session.googleState ||
+            req.query.state !== req.session.googleState
+        ) {
+            return res.status(403).send("Invalid login request.");
+        }
+
+        delete req.session.googleState;
+
+        // Get Google's response
+        const { tokens } = await googleClient.getToken({
+            code: req.query.code,
+            redirect_uri: "http://localhost:3000/api/auth/google/callback"
+        });
+
+        // Verify the Google account
+        const ticket = await googleClient.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+
+        const googleUser = ticket.getPayload();
+
+        if (!googleUser.email_verified) {
+            return res.status(403).send("Email not verified.");
+        }
+
+        const email = googleUser.email.toLowerCase();
+
+        // Check if user already exists
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE email = ? LIMIT 1",
+            [email]
+        );
+
+        let user;
+
+        if (rows.length > 0) {
+
+            user = rows[0];
+
+        } else {
+
+            // Create a new RoadReady account
+            const passwordHash = await bcrypt.hash(
+                crypto.randomBytes(32).toString("hex"),
+                SALT_ROUNDS
+            );
+
+            const [result] = await db.query(
+                `INSERT INTO users
+                (full_name, email, password_hash, avatar_url)
+                VALUES (?, ?, ?, ?)`,
+                [
+                    googleUser.name || email,
+                    email,
+                    passwordHash,
+                    googleUser.picture || null
+                ]
+            );
+
+            user = {
+                id: result.insertId,
+                email: email,
+                full_name: googleUser.name,
+                avatar_url: googleUser.picture
+            };
+        }
+
+        // Create RoadReady login session
+        req.session.user = {
+            id: user.id,
+            email: user.email,
+            fullName: user.full_name,
+            avatarUrl: user.avatar_url
+        };
+
+        res.redirect("/dashboard.html");
+
+    } catch (error) {
+
+        console.error("Google login error:", error);
+
+        res.status(500).send("Google login failed.");
+    }
 });
 
 
